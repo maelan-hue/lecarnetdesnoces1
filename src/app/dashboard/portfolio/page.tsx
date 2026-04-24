@@ -175,13 +175,6 @@ export default function PortfolioPage() {
         </p>
       )}
 
-      {!process.env.NEXT_PUBLIC_CLOUDINARY_CONFIGURED && (
-        <div className="tip" style={{ marginBottom: 28 }}>
-          🌿 <strong>Configuration requise —</strong> Pour activer l&apos;upload de photos, ajoutez vos clés Cloudinary dans le fichier <code style={{ fontStyle: "normal", background: "var(--ivory)", padding: "1px 6px" }}>.env</code> puis relancez le serveur.
-          Créez un compte gratuit sur <strong>cloudinary.com</strong>.
-        </div>
-      )}
-
       {/* ── TARIFS ── */}
       <h2 className="section-title" style={{ marginTop: 40 }}>Formules &amp; tarifs</h2>
       <p className="section-hint">Donnez des repères aux couples — les prix peuvent être ajustés au cas par cas.</p>
