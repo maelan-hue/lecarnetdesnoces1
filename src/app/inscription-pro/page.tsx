@@ -13,6 +13,7 @@ const CATEGORIES = [
   { value: "COIFFURE_MAQUILLAGE", label: "Coiffure & maquillage" },
   { value: "DECORATION_PAPETERIE",label: "Décoration / Papeterie" },
   { value: "WEDDING_PLANNER",     label: "Wedding planner" },
+  { value: "VINS_CHAMPAGNE",      label: "Vins & champagne" },
   { value: "AUTRE",               label: "Autre" },
 ];
 

@@ -42,8 +42,9 @@ export const PRO_CATEGORIES: Record<string, string> = {
   OFFICIANT: "Officiant laïc",
   COIFFURE_MAQUILLAGE: "Coiffure & maquillage",
   DECORATION_PAPETERIE: "Décoration / Papeterie",
-  WEDDING_PLANNER: "Wedding planner",
-  AUTRE: "Autre",
+  WEDDING_PLANNER:  "Wedding planner",
+  VINS_CHAMPAGNE:   "Vins & champagne",
+  AUTRE:            "Autre",
 };
 
 export const AMBIANCES: Record<string, string> = {

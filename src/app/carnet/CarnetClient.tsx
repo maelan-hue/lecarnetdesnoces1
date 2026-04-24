@@ -18,6 +18,7 @@ const CATEGORY_TO_PRO: Record<string, string> = {
   coiffure:        "COIFFURE_MAQUILLAGE",
   officiant:       "OFFICIANT",
   wedding_planner: "WEDDING_PLANNER",
+  boissons:        "VINS_CHAMPAGNE",
 };
 
 type Task = {
