@@ -91,7 +91,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         to:              conv.pro.email,
         recipientName:   conv.pro.name,
         senderName:      conv.couple.prenoms,
-        messagePreview:  body.trim().slice(0, 120),
+        messageBody:     body.trim(),
         conversationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/messagerie?conv=${id}`,
       });
     } else {
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest, { params }: Params) {
         to:              conv.couple.email,
         recipientName:   conv.couple.prenoms,
         senderName:      conv.pro.name,
-        messagePreview:  body.trim().slice(0, 120),
+        messageBody:     body.trim(),
         conversationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/messages?conv=${id}`,
       });
     }

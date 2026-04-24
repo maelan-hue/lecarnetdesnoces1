@@ -2,18 +2,33 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 const LINKS = [
-  { href: "/carnet",       label: "Mon carnet" },
-  { href: "/invites",      label: "Invités" },
-  { href: "/prestataires", label: "Prestataires" },
-  { href: "/messages",     label: "Messages" },
-  { href: "/compte",       label: "Mon compte" },
+  { href: "/carnet",       label: "Mon carnet",    unread: false },
+  { href: "/invites",      label: "Invités",       unread: false },
+  { href: "/prestataires", label: "Prestataires",  unread: false },
+  { href: "/messages",     label: "Messages",      unread: true  },
+  { href: "/compte",       label: "Mon compte",    unread: false },
 ];
 
 export default function CoupleNav({ prenoms }: { prenoms: string }) {
   const pathname = usePathname();
   const router   = useRouter();
+  const [unread, setUnread] = useState(0);
+
+  const fetchUnread = () => {
+    fetch("/api/couple/unread")
+      .then((r) => r.json())
+      .then((d) => setUnread(d.count ?? 0))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    fetchUnread();
+    const t = setInterval(fetchUnread, 30000);
+    return () => clearInterval(t);
+  }, []);
 
   const handleLogout = async () => {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -27,13 +42,24 @@ export default function CoupleNav({ prenoms }: { prenoms: string }) {
       </Link>
 
       <div className="couple-nav-links">
-        {LINKS.map(({ href, label }) => (
+        {LINKS.map(({ href, label, unread: showBadge }) => (
           <Link
             key={href}
             href={href}
             className={`couple-nav-link${pathname.startsWith(href) ? " active" : ""}`}
+            style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6 }}
           >
             {label}
+            {showBadge && unread > 0 && (
+              <span style={{
+                background: "var(--gold)", color: "var(--paper)",
+                borderRadius: "100px", fontSize: "0.5rem", fontWeight: 600,
+                padding: "1px 6px", lineHeight: 1.6, fontFamily: "'Jost',sans-serif",
+                letterSpacing: "0.04em",
+              }}>
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
           </Link>
         ))}
       </div>

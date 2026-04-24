@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         to:              pro.email,
         recipientName:   pro.name,
         senderName:      couple.prenoms,
-        messagePreview:  body.trim().slice(0, 120),
+        messageBody:     body.trim(),
         conversationUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/messagerie?conv=${conv.id}`,
       });
     } catch (e) {
