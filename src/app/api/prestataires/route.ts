@@ -9,32 +9,21 @@ export async function GET(req: NextRequest) {
   }
 
   const { searchParams } = req.nextUrl;
-  const category  = searchParams.get("category") ?? undefined;
-  const ambiance  = searchParams.get("ambiance") ?? undefined;
-  const date      = searchParams.get("date") ?? undefined;
-
-  // Trouver les pros indisponibles à la date demandée
-  let unavailableIds: string[] = [];
-  if (date) {
-    const day = new Date(date);
-    const unavail = await db.proAvailability.findMany({
-      where: { date: day, status: "UNAVAILABLE" },
-      select: { proId: true },
-    });
-    unavailableIds = unavail.map((u) => u.proId);
-  }
+  const category = searchParams.get("category") ?? undefined;
+  const ambiance = searchParams.get("ambiance") ?? undefined;
+  const date     = searchParams.get("date") ?? undefined;
 
   const pros = await db.pro.findMany({
     where: {
       status: "ACTIVE",
       ...(category ? { category: category as never } : {}),
       ...(ambiance  ? { ambiances: { has: ambiance } } : {}),
-      ...(unavailableIds.length > 0 ? { id: { notIn: unavailableIds } } : {}),
     },
     select: {
       id: true, slug: true, name: true, tagline: true,
       category: true, ambiances: true, city: true,
       department: true, portfolioPhotos: true, profilePhoto: true,
+      calendarActive: true,
       tarifs: { orderBy: { position: "asc" }, take: 1, select: { priceFrom: true } },
       availability: date
         ? { where: { date: new Date(date) }, select: { status: true } }
@@ -43,14 +32,27 @@ export async function GET(req: NextRequest) {
     orderBy: { name: "asc" },
   });
 
-  // Incrémenter vues de fiche (comptage global)
+  // Trier : disponibles en tête, indisponibles en fin
+  const sorted = [...pros].sort((a, b) => {
+    const statusScore = (p: typeof pros[0]) => {
+      if (!p.calendarActive) return 1; // À contacter
+      const s = (p.availability as { status: string }[] | false);
+      if (!s || !Array.isArray(s) || s.length === 0) return 1;
+      if (s[0].status === "AVAILABLE")   return 0;
+      if (s[0].status === "UNAVAILABLE") return 2;
+      return 1;
+    };
+    return statusScore(a) - statusScore(b);
+  });
+
+  // Incrémenter vues de fiche (silencieux)
   const ids = pros.map((p) => p.id);
   if (ids.length > 0) {
-    await db.proStats.updateMany({
+    db.proStats.updateMany({
       where: { proId: { in: ids } },
       data:  { profileViews: { increment: 1 } },
-    });
+    }).catch(() => {});
   }
 
-  return NextResponse.json(pros);
+  return NextResponse.json(sorted);
 }

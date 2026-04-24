@@ -766,6 +766,7 @@ body {
 .avail-dot::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .avail-ok      { background: rgba(122,139,110,0.12); color: var(--sage); }
 .avail-contact { background: rgba(168,131,59,0.12);  color: var(--gold); }
+.avail-no      { background: rgba(176,96,74,0.12);   color: var(--terracotta); border: 1px solid rgba(176,96,74,0.3); }
 .presta-price  { font-family: 'Cormorant Garamond',serif; font-size: 0.9rem; color: var(--mute); font-style: italic; }
 
 .floating-bar { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 16px 28px; display: flex; gap: 18px; align-items: center; box-shadow: 0 10px 40px rgba(26,21,16,0.25); z-index: 90; white-space: nowrap; }

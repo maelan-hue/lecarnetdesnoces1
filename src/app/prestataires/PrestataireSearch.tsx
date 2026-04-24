@@ -9,7 +9,7 @@ type Pro = {
   id: string; slug: string; name: string; tagline: string | null;
   category: string; ambiances: string[]; city: string | null;
   department: string | null; portfolioPhotos: string[];
-  profilePhoto: string | null;
+  profilePhoto: string | null; calendarActive: boolean;
   tarifs: { priceFrom: number }[];
   availability: { status: string }[];
 };
@@ -67,9 +67,14 @@ function SearchContent({ coupleData, categories }: Props) {
     ? new Date(coupleData.weddingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
     : "Date à définir";
 
-  const getAvailLabel = (pro: Pro) => {
-    if (!coupleData.weddingDate || pro.availability.length === 0) return "contact";
-    return pro.availability[0].status === "AVAILABLE" ? "ok" : null;
+  const getAvailLabel = (pro: Pro): "ok" | "unavailable" | "contact" => {
+    if (!coupleData.weddingDate)       return "contact";
+    if (!pro.calendarActive)           return "contact";
+    if (pro.availability.length === 0) return "contact";
+    const s = pro.availability[0].status;
+    if (s === "AVAILABLE")   return "ok";
+    if (s === "UNAVAILABLE") return "unavailable";
+    return "contact";
   };
 
   const initials = (name: string) =>
@@ -199,8 +204,14 @@ function SearchContent({ coupleData, categories }: Props) {
                 </div>
 
                 <div className="presta-avail">
-                  {avail === "ok"      && <div className="avail-dot avail-ok">Disponible</div>}
-                  {avail === "contact" && <div className="avail-dot avail-contact">À contacter</div>}
+                  {avail === "ok"         && <div className="avail-dot avail-ok">Disponible</div>}
+                  {avail === "contact"    && <div className="avail-dot avail-contact">À contacter</div>}
+                  {avail === "unavailable" && (
+                    <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500, background:"rgba(176,96,74,0.12)", color:"var(--terracotta)", border:"1px solid rgba(176,96,74,0.3)", marginBottom:6 }}>
+                      <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--terracotta)", display:"inline-block" }} />
+                      Indisponible
+                    </div>
+                  )}
                   {minTarif && (
                     <div className="presta-price">À partir de {minTarif.priceFrom.toLocaleString("fr-FR")} €</div>
                   )}
