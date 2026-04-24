@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { computeAmounts } from "@/lib/stripe";
 import { sendPaymentLinkEmail } from "@/lib/email";
 import { PaymentLinkType } from "@prisma/client";
-import { nanoid } from "nanoid";
+import { randomBytes } from "crypto";
 
 export async function GET() {
   const session = await getSession();
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   const amountCents  = Math.round(quoteCents * pct / 100);
   const { commission, amountTotal, amountNet } = computeAmounts(amountCents);
 
-  const id        = nanoid(10);
+  const id        = randomBytes(6).toString("hex"); // 12 caractères hex
   const expiresAt = new Date(Date.now() + 15 * 24 * 60 * 60 * 1000); // 15 jours
 
   const link = await db.paymentLink.create({
