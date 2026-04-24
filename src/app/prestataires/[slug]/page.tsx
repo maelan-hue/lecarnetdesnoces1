@@ -19,14 +19,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FichePubliquePage({ params }: Props) {
   const { slug }  = await params;
-  const session   = await getSession();
-  const isCouple  = session?.role === "couple";
+  const session = await getSession();
 
   const pro = await db.pro.findUnique({
     where:   { slug, status: "ACTIVE" },
     include: { tarifs: { orderBy: { position: "asc" } }, stats: true },
   });
   if (!pro) notFound();
+
+  const isCouple = session?.role === "couple";
+  const isPro    = session?.role === "pro" && session.sub === pro.id;
 
   // Incrémenter les vues
   await db.proStats.upsert({
@@ -41,10 +43,25 @@ export default async function FichePubliquePage({ params }: Props) {
     <>
       {/* Nav */}
       <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
-        <Link href={isCouple ? "/prestataires" : "/"} className="landing-logo" style={{ fontSize:"1.1rem", textDecoration:"none" }}>
-          {isCouple ? "← Retour aux prestataires" : <>Le Carnet <em>des noces</em></>}
-        </Link>
-        {isCouple ? (
+        {isPro ? (
+          <Link href="/dashboard/portfolio" className="landing-logo" style={{ fontSize:"0.68rem", textDecoration:"none", fontFamily:"'Jost',sans-serif", fontWeight:400, letterSpacing:"0.1em", textTransform:"uppercase", color:"var(--mute)" }}>
+            ← Retour au dashboard
+          </Link>
+        ) : isCouple ? (
+          <Link href="/prestataires" className="landing-logo" style={{ fontSize:"0.68rem", textDecoration:"none", fontFamily:"'Jost',sans-serif", fontWeight:400, letterSpacing:"0.1em", textTransform:"uppercase", color:"var(--mute)" }}>
+            ← Retour aux prestataires
+          </Link>
+        ) : (
+          <Link href="/" className="landing-logo" style={{ fontSize:"1.1rem", textDecoration:"none" }}>
+            Le Carnet <em>des noces</em>
+          </Link>
+        )}
+
+        {isPro ? (
+          <Link href="/dashboard/portfolio" className="btn ghost small">
+            Modifier ma fiche
+          </Link>
+        ) : isCouple ? (
           <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn gold small">
             Contacter {pro.name.split(/\s+/)[0]}
           </Link>
@@ -87,10 +104,10 @@ export default async function FichePubliquePage({ params }: Props) {
         {pro.portfolioPhotos.length > 0 && (
           <div style={{ marginBottom:36 }}>
             <h2 className="section-title">Portfolio</h2>
-            <div className="portfolio-grid">
+            <div className="portfolio-grid" style={{ gridTemplateColumns:"repeat(auto-fill, minmax(140px, 1fr))", gap:10 }}>
               {pro.portfolioPhotos.map((url, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={i} src={url} alt={`${pro.name} — photo ${i+1}`} style={{ aspectRatio:"4/5", objectFit:"cover", width:"100%" }} />
+                <img key={i} src={url} alt={`${pro.name} — photo ${i+1}`} style={{ aspectRatio:"4/5", objectFit:"cover", width:"100%", display:"block" }} />
               ))}
             </div>
           </div>
