@@ -2,6 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+// Correspondance category (tâche) → ProCategory (enum Prisma)
+const CATEGORY_TO_PRO: Record<string, string> = {
+  lieu:            "LIEU",
+  traiteur:        "TRAITEUR",
+  photographe:     "PHOTOGRAPHE",
+  videaste:        "VIDEASTE",
+  dj_musicien:     "DJ_MUSICIEN",
+  fleuriste:       "FLEURISTE",
+  decoration:      "DECORATION_PAPETERIE",
+  maquillage:      "COIFFURE_MAQUILLAGE",
+  coiffure:        "COIFFURE_MAQUILLAGE",
+  officiant:       "OFFICIANT",
+  wedding_planner: "WEDDING_PLANNER",
+};
 
 type Task = {
   id: string; title: string; description?: string | null;
@@ -32,6 +48,7 @@ const TASK_CLASS: Record<string, string> = {
 };
 
 export default function CarnetClient({ data }: { data: CarnetData }) {
+  const router = useRouter();
   // Phase 1 ouverte par défaut, les autres selon avancement
   const [open, setOpen] = useState<Record<number, boolean>>(() => {
     const state: Record<number, boolean> = {};
@@ -142,17 +159,25 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                     const isDone  = task.status === "DONE" || isPaid;
                     const cls     = isPaid ? "paid" : TASK_CLASS[task.status];
 
+                    const proCategory = CATEGORY_TO_PRO[task.category];
+                    const searchUrl   = proCategory
+                      ? `/prestataires?category=${proCategory}`
+                      : `/prestataires`;
+
                     return (
-                      <div key={task.id} className={`task clickable ${cls}`}>
+                      <div
+                        key={task.id}
+                        className={`task clickable ${cls}`}
+                        onClick={() => router.push(searchUrl)}
+                      >
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
                           <div className="task-name">{task.title}</div>
-                          {task.proName && (
+                          {task.proName ? (
                             <div className="task-pres">{task.proName}</div>
-                          )}
-                          {!task.proName && task.description && (
+                          ) : task.description ? (
                             <div className="task-pres">{task.description}</div>
-                          )}
+                          ) : null}
                         </div>
                         <div className="task-side">
                           {isPaid ? (
@@ -161,7 +186,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                             <><div className="amount">{task.quoteTotal.toLocaleString("fr-FR")} €</div>devis</>
                           ) : (
                             <span style={{ color: isDone ? "var(--ok)" : "var(--terracotta)" }}>
-                              {isDone ? "Réservé ✓" : "À choisir"}
+                              {isDone ? "Réservé ✓" : "À choisir →"}
                             </span>
                           )}
                         </div>

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import { PRO_CATEGORIES, AMBIANCES } from "@/lib/utils";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -17,7 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function FichePubliquePage({ params }: Props) {
-  const { slug } = await params;
+  const { slug }  = await params;
+  const session   = await getSession();
+  const isCouple  = session?.role === "couple";
 
   const pro = await db.pro.findUnique({
     where:   { slug, status: "ACTIVE" },
@@ -36,10 +39,18 @@ export default async function FichePubliquePage({ params }: Props) {
 
   return (
     <>
-      {/* Nav minimale */}
+      {/* Nav */}
       <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
-        <Link href="/" className="landing-logo" style={{ fontSize:"1.1rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>
-        <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>
+        <Link href={isCouple ? "/prestataires" : "/"} className="landing-logo" style={{ fontSize:"1.1rem", textDecoration:"none" }}>
+          {isCouple ? "← Retour aux prestataires" : <>Le Carnet <em>des noces</em></>}
+        </Link>
+        {isCouple ? (
+          <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn gold small">
+            Contacter {pro.name.split(/\s+/)[0]}
+          </Link>
+        ) : (
+          <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>
+        )}
       </nav>
 
       <div className="container">
@@ -56,7 +67,9 @@ export default async function FichePubliquePage({ params }: Props) {
             </div>
             {pro.ambiances.length > 0 && (
               <div style={{ marginTop:10, display:"flex", gap:6, flexWrap:"wrap" }}>
-                {pro.ambiances.map((a) => <span key={a} className="chip active" style={{ cursor:"default" }}>{AMBIANCES[a] ?? a}</span>)}
+                {pro.ambiances.map((a) => (
+                  <span key={a} className="chip active" style={{ cursor:"default" }}>{AMBIANCES[a] ?? a}</span>
+                ))}
               </div>
             )}
           </div>
@@ -90,7 +103,10 @@ export default async function FichePubliquePage({ params }: Props) {
             <div className="tarif-list">
               {pro.tarifs.map((t) => (
                 <div key={t.id} className="tarif-row">
-                  <div><div className="tarif-name">{t.name}</div>{t.description && <div className="tarif-desc">{t.description}</div>}</div>
+                  <div>
+                    <div className="tarif-name">{t.name}</div>
+                    {t.description && <div className="tarif-desc">{t.description}</div>}
+                  </div>
                   <div className="tarif-price">À partir de {t.priceFrom.toLocaleString("fr-FR")} €</div>
                 </div>
               ))}
@@ -98,11 +114,36 @@ export default async function FichePubliquePage({ params }: Props) {
           </div>
         )}
 
-        {/* CTA contact */}
+        {/* CTA */}
         <div style={{ background:"var(--ivory)", border:"1px solid var(--bone)", padding:"32px 36px", textAlign:"center", borderTop:"2px solid var(--gold)" }}>
-          <h3 className="serif" style={{ fontSize:"1.6rem", fontWeight:300, marginBottom:10 }}>Intéressé·e par <em style={{ color:"var(--gold)", fontStyle:"italic" }}>{pro.name}</em> ?</h3>
-          <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:24 }}>Créez votre carnet gratuit en 2 minutes pour envoyer votre demande.</p>
-          <Link href="/onboarding" className="btn large gold">Commencer mon carnet</Link>
+          {isCouple ? (
+            <>
+              <h3 className="serif" style={{ fontSize:"1.6rem", fontWeight:300, marginBottom:10 }}>
+                Intéressé·e par <em style={{ color:"var(--gold)", fontStyle:"italic" }}>{pro.name}</em> ?
+              </h3>
+              <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:24 }}>
+                Envoyez votre demande directement depuis votre carnet. Réponse sous 48 h.
+              </p>
+              <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+                <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn large gold">
+                  Contacter {pro.name.split(/\s+/)[0]}
+                </Link>
+                <Link href="/prestataires" className="btn ghost">
+                  ← Retour à la liste
+                </Link>
+              </div>
+            </>
+          ) : (
+            <>
+              <h3 className="serif" style={{ fontSize:"1.6rem", fontWeight:300, marginBottom:10 }}>
+                Intéressé·e par <em style={{ color:"var(--gold)", fontStyle:"italic" }}>{pro.name}</em> ?
+              </h3>
+              <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:24 }}>
+                Créez votre carnet gratuit en 2 minutes pour envoyer votre demande.
+              </p>
+              <Link href="/onboarding" className="btn large gold">Commencer mon carnet</Link>
+            </>
+          )}
         </div>
 
         <div className="ornament">· · · · ·</div>
