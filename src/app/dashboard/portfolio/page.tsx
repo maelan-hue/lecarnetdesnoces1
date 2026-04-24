@@ -114,7 +114,7 @@ export default function PortfolioPage() {
         {photos.length} / 12 photos · Les premières apparaissent en tête de fiche.
       </p>
 
-      <div className="portfolio-grid" style={{ marginBottom: 16 }}>
+      <div className="portfolio-grid" style={{ marginBottom: 16, gridTemplateColumns: "repeat(auto-fill, minmax(110px, 1fr))", gap: 8 }}>
         {photos.map((url) => (
           <div key={url} style={{ position: "relative", aspectRatio: "4/5" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
