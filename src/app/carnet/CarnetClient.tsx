@@ -20,7 +20,7 @@ type CarnetData = {
   weddingVenue: string | null; guestCount: number | null;
   budgetEstimate: number | null; budgetEngage: number;
   days: number | null; months: number | null;
-  guestTotal: number; guestPresents: number; totalTasks: number;
+  guestTotal: number; totalTasks: number;
   phases: Phase[];
 };
 
