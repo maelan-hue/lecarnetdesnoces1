@@ -1,0 +1,112 @@
+import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { PRO_CATEGORIES, AMBIANCES } from "@/lib/utils";
+import type { Metadata } from "next";
+import Link from "next/link";
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const pro = await db.pro.findUnique({ where: { slug }, select: { name:true, tagline:true, category:true, city:true } });
+  if (!pro) return { title: "Prestataire introuvable" };
+  return {
+    title: `${pro.name} — ${PRO_CATEGORIES[pro.category]} — Le Carnet des noces`,
+    description: pro.tagline ?? `${pro.name}, ${PRO_CATEGORIES[pro.category]} à ${pro.city ?? "Roussillon"}. Découvrez le portfolio et les tarifs.`,
+  };
+}
+
+export default async function FichePubliquePage({ params }: Props) {
+  const { slug } = await params;
+
+  const pro = await db.pro.findUnique({
+    where:   { slug, status: "ACTIVE" },
+    include: { tarifs: { orderBy: { position: "asc" } }, stats: true },
+  });
+  if (!pro) notFound();
+
+  // Incrémenter les vues
+  await db.proStats.upsert({
+    where:  { proId: pro.id },
+    update: { profileViews: { increment: 1 } },
+    create: { proId: pro.id, profileViews: 1 },
+  });
+
+  const initials = pro.name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  return (
+    <>
+      {/* Nav minimale */}
+      <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:56, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
+        <Link href="/" className="landing-logo" style={{ fontSize:"1.1rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>
+        <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>
+      </nav>
+
+      <div className="container">
+
+        {/* En-tête */}
+        <div className="presta-hero" style={{ marginBottom:36 }}>
+          <div className="presta-hero-photo serif">{initials}</div>
+          <div>
+            <div className="eyebrow">{PRO_CATEGORIES[pro.category]}</div>
+            <div className="presta-hero-name">{pro.name}</div>
+            {pro.tagline && <div className="presta-hero-style">{pro.tagline}</div>}
+            <div className="presta-hero-meta">
+              {[pro.city, pro.department ? `Dép. ${pro.department}` : null, pro.radiusKm ? `Rayon ${pro.radiusKm} km` : null].filter(Boolean).join(" · ")}
+            </div>
+            {pro.ambiances.length > 0 && (
+              <div style={{ marginTop:10, display:"flex", gap:6, flexWrap:"wrap" }}>
+                {pro.ambiances.map((a) => <span key={a} className="chip active" style={{ cursor:"default" }}>{AMBIANCES[a] ?? a}</span>)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {pro.bio && (
+          <div style={{ marginBottom:36 }}>
+            <h2 className="section-title">À propos</h2>
+            <p className="serif" style={{ fontSize:"1.05rem", lineHeight:1.7, color:"var(--ink)", whiteSpace:"pre-wrap" }}>{pro.bio}</p>
+          </div>
+        )}
+
+        {/* Portfolio */}
+        {pro.portfolioPhotos.length > 0 && (
+          <div style={{ marginBottom:36 }}>
+            <h2 className="section-title">Portfolio</h2>
+            <div className="portfolio-grid">
+              {pro.portfolioPhotos.map((url, i) => (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img key={i} src={url} alt={`${pro.name} — photo ${i+1}`} style={{ aspectRatio:"4/5", objectFit:"cover", width:"100%" }} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tarifs */}
+        {pro.tarifs.length > 0 && (
+          <div style={{ marginBottom:36 }}>
+            <h2 className="section-title">Formules &amp; tarifs</h2>
+            <div className="tarif-list">
+              {pro.tarifs.map((t) => (
+                <div key={t.id} className="tarif-row">
+                  <div><div className="tarif-name">{t.name}</div>{t.description && <div className="tarif-desc">{t.description}</div>}</div>
+                  <div className="tarif-price">À partir de {t.priceFrom.toLocaleString("fr-FR")} €</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CTA contact */}
+        <div style={{ background:"var(--ivory)", border:"1px solid var(--bone)", padding:"32px 36px", textAlign:"center", borderTop:"2px solid var(--gold)" }}>
+          <h3 className="serif" style={{ fontSize:"1.6rem", fontWeight:300, marginBottom:10 }}>Intéressé·e par <em style={{ color:"var(--gold)", fontStyle:"italic" }}>{pro.name}</em> ?</h3>
+          <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:24 }}>Créez votre carnet gratuit en 2 minutes pour envoyer votre demande.</p>
+          <Link href="/onboarding" className="btn large gold">Commencer mon carnet</Link>
+        </div>
+
+        <div className="ornament">· · · · ·</div>
+      </div>
+    </>
+  );
+}
