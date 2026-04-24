@@ -26,7 +26,7 @@ export default async function CarnetPage() {
     return sum + (paye > 0 ? paye : t.quoteTotal ?? 0);
   }, 0);
 
-  const guestTotal    = couple.guests.length;
+  const guestTotal    = couple.guests.filter((g) => g.presence === "PRESENT").length;
   const days          = couple.weddingDate ? daysUntil(couple.weddingDate) : null;
   const months        = days !== null ? Math.round(days / 30) : null;
 

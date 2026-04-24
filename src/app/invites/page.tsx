@@ -62,7 +62,7 @@ export default function InvitesPage() {
   });
 
   const stats = {
-    total:   guests.length,
+    total:   guests.filter((g) => g.presence === "PRESENT").length,
     present: guests.filter((g) => g.presence === "PRESENT").length,
     absent:  guests.filter((g) => g.presence === "ABSENT").length,
     pending: guests.filter((g) => g.presence === "PENDING").length,
@@ -88,19 +88,19 @@ export default function InvitesPage() {
       <div className="guests-stats">
         <div className="guest-stat highlight">
           <div className="guest-stat-n">{stats.total}</div>
-          <div className="guest-stat-lbl">Total invités</div>
+          <div className="guest-stat-lbl">Présents confirmés</div>
         </div>
         <div className="guest-stat">
-          <div className="guest-stat-n" style={{ color: "var(--sage)" }}>{stats.present}</div>
-          <div className="guest-stat-lbl">Présents confirmés</div>
+          <div className="guest-stat-n" style={{ color: "var(--gold)" }}>{stats.pending}</div>
+          <div className="guest-stat-lbl">En attente</div>
         </div>
         <div className="guest-stat">
           <div className="guest-stat-n" style={{ color: "var(--terracotta)" }}>{stats.absent}</div>
           <div className="guest-stat-lbl">Absents</div>
         </div>
         <div className="guest-stat">
-          <div className="guest-stat-n" style={{ color: "var(--gold)" }}>{stats.pending}</div>
-          <div className="guest-stat-lbl">En attente</div>
+          <div className="guest-stat-n" style={{ color: "var(--mute)" }}>{guests.length}</div>
+          <div className="guest-stat-lbl">Dans la liste</div>
         </div>
       </div>
 
@@ -148,7 +148,7 @@ export default function InvitesPage() {
       <h2 className="section-title">Liste complète</h2>
       <div className="guest-filters">
         {[
-          { key: "ALL",     label: `Tous (${stats.total})` },
+          { key: "ALL",     label: `Tous (${guests.length})` },
           { key: "PRESENT", label: `Présents (${stats.present})` },
           { key: "ABSENT",  label: `Absents (${stats.absent})` },
           { key: "PENDING", label: `En attente (${stats.pending})` },
