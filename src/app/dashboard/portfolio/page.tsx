@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 
 type Tarif = { id: string; name: string; description: string | null; priceFrom: number; position: number };
 
@@ -9,6 +10,7 @@ const EMPTY_TARIF = { name: "", description: "", priceFrom: "" };
 export default function PortfolioPage() {
   const [photos,      setPhotos]      = useState<string[]>([]);
   const [tarifs,      setTarifs]      = useState<Tarif[]>([]);
+  const [slug,        setSlug]        = useState("");
   const [uploading,   setUploading]   = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [editId,      setEditId]      = useState<string | null>(null);
@@ -19,7 +21,7 @@ export default function PortfolioPage() {
 
   useEffect(() => {
     fetch("/api/pro/fiche").then((r) => r.json()).then((d) => {
-      if (d.pro) setPhotos(d.pro.portfolioPhotos ?? []);
+      if (d.pro) { setPhotos(d.pro.portfolioPhotos ?? []); setSlug(d.pro.slug ?? ""); }
     });
     fetch("/api/pro/tarifs").then((r) => r.json()).then((d) => {
       if (Array.isArray(d)) setTarifs(d);
@@ -102,10 +104,22 @@ export default function PortfolioPage() {
 
   return (
     <>
-      <div className="page-head">
-        <div className="eyebrow">Vos travaux &amp; vos formules</div>
-        <h1 className="page-title">Portfolio &amp; <em>tarifs</em></h1>
-        <p className="page-sub">Six photos minimum. Les plus belles — celles qui racontent votre signature.</p>
+      <div className="page-head" style={{ display:"grid", gridTemplateColumns:"1fr auto", alignItems:"start", gap:20 }}>
+        <div>
+          <div className="eyebrow">Vos travaux &amp; vos formules</div>
+          <h1 className="page-title">Portfolio &amp; <em>tarifs</em></h1>
+          <p className="page-sub">Six photos minimum. Les plus belles — celles qui racontent votre signature.</p>
+        </div>
+        {slug && (
+          <Link
+            href={`/prestataires/${slug}`}
+            target="_blank"
+            className="btn ghost small"
+            style={{ marginTop: 8, whiteSpace: "nowrap" }}
+          >
+            ◎ Aperçu ma fiche
+          </Link>
+        )}
       </div>
 
       {/* ── PORTFOLIO ── */}

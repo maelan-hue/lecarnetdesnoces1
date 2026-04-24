@@ -8,7 +8,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await getSession();
   if (!session || session.role !== "pro") redirect("/connexion-pro");
 
-  const pro = await db.pro.findUnique({ where: { id: session.sub }, select: { name: true, category: true, status: true } });
+  const pro = await db.pro.findUnique({ where: { id: session.sub }, select: { name: true, category: true, status: true, slug: true } });
   if (!pro) redirect("/connexion-pro");
   if (pro.status !== "ACTIVE") redirect("/connexion-pro");
 
@@ -17,7 +17,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="pro-layout">
-      <ProSidebar name={pro.name} category={categoryLabel} initials={initials} />
+      <ProSidebar name={pro.name} category={categoryLabel} initials={initials} slug={pro.slug} />
       <main className="pro-main">{children}</main>
     </div>
   );
