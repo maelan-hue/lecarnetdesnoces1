@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import DateEditor from "@/components/couple/DateEditor";
 
 // Correspondance category (tâche) → ProCategory (enum Prisma)
 const CATEGORY_TO_PRO: Record<string, string> = {
@@ -94,24 +95,16 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
         </div>
       </div>
 
-      {/* ── COUNTDOWN ── */}
-      {(data.days !== null || data.guestTotal > 0) && (
-        <div className="countdown">
-          {data.days !== null && data.days > 0 && (
-            <>
-              <div className="cd"><span className="cd-n">{data.days}</span><span className="cd-l">Jours</span></div>
-              <div className="cd"><span className="cd-n">{data.months}</span><span className="cd-l">Mois</span></div>
-            </>
-          )}
-          <Link href="/invites" style={{ textDecoration: "none" }}>
-            <div className="cd" style={{ cursor: "pointer" }}>
-              <span className="cd-n" style={{ color: "var(--gold)" }}>{data.guestTotal || data.guestCount || "—"}</span>
-              <span className="cd-l">Invités →</span>
-            </div>
-          </Link>
-          <div className="cd"><span className="cd-n">{data.totalTasks}</span><span className="cd-l">Étapes</span></div>
-        </div>
-      )}
+      {/* ── COUNTDOWN / DATE EDITOR ── */}
+      <DateEditor
+        weddingDate={data.weddingDate}
+        weddingCity={data.weddingCity}
+        weddingVenue={data.weddingVenue}
+        guestCount={data.guestCount}
+        days={data.days}
+        months={data.months}
+        guestTotal={data.guestTotal}
+      />
 
       {/* ── PHASES ── */}
       <div className="section-title" style={{ marginBottom: 6 }}>
