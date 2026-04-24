@@ -532,3 +532,59 @@ body {
 /* Connexion */
 .auth-card { background: var(--paper); border: 1px solid var(--bone); padding: 48px 44px; max-width: 480px; margin: 0 auto; }
 @media (max-width: 540px) { .auth-card { padding: 32px 24px; } }
+
+/* ═══════════════════════════════════════════
+   CARNET COUPLE
+   ═══════════════════════════════════════════ */
+
+.carnet-head { display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--bone); align-items: end; }
+@media (max-width: 760px) { .carnet-head { grid-template-columns: 1fr; } }
+
+.carnet-name { font-family: 'Cormorant Garamond', serif; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 300; line-height: 1.05; color: var(--ink); margin-bottom: 4px; }
+.carnet-name em { color: var(--gold); font-style: italic; }
+.carnet-sub  { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: var(--mute); }
+
+.budget-card { text-align: right; padding: 18px 26px; background: var(--ivory); border: 1px solid var(--bone); }
+.budget-lbl  { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--taupe); margin-bottom: 6px; }
+.budget-val  { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold); font-weight: 500; line-height: 1; }
+
+.countdown { display: flex; gap: 16px; margin-bottom: 48px; padding: 22px 0; border-top: 1px solid var(--bone); border-bottom: 1px solid var(--bone); justify-content: center; flex-wrap: wrap; }
+.cd   { display: flex; flex-direction: column; align-items: center; min-width: 80px; padding: 0 14px; }
+.cd-n { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--ink); line-height: 1; }
+.cd-l { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); margin-top: 8px; }
+
+.phases { display: flex; flex-direction: column; gap: 14px; }
+.phase  { background: var(--paper); border: 1px solid var(--bone); }
+
+.phase-hd { padding: 20px 26px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; gap: 16px; }
+.phase-hd:hover { background: var(--ivory); }
+
+.ph-l    { display: flex; align-items: center; gap: 18px; }
+.ph-dot  { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+.dot-done { background: var(--ok); }
+.dot-cur  { background: var(--gold); }
+.dot-wait { background: var(--bone); }
+
+.ph-timing { font-size: 0.64rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--taupe); margin-bottom: 3px; }
+.ph-name   { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; color: var(--ink); }
+.ph-r      { display: flex; align-items: center; gap: 12px; }
+.chevron   { width: 14px; height: 14px; color: var(--taupe); transition: transform 0.3s; }
+.chevron.open { transform: rotate(180deg); }
+
+.phase-body  { overflow: hidden; transition: max-height 0.4s ease; }
+.phase-inner { padding: 20px 26px 24px; border-top: 1px dashed var(--bone); }
+
+.task { display: grid; grid-template-columns: 20px 1fr auto; gap: 14px; padding: 14px 0; align-items: center; border-bottom: 1px dashed var(--bone); }
+.task:last-child { border-bottom: none; }
+.task.clickable { cursor: pointer; }
+.task.clickable:hover .task-name { color: var(--gold); }
+
+.task-check { width: 17px; height: 17px; border: 1.5px solid var(--taupe); border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--paper); }
+.task.done .task-check { background: var(--ok);  border-color: var(--ok); }
+.task.paid .task-check { background: var(--ink); border-color: var(--ink); font-size: 0.55rem; }
+
+.task-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); transition: color 0.2s; }
+.task-pres { font-size: 0.78rem; color: var(--mute); margin-top: 2px; }
+
+.task-side        { text-align: right; font-size: 0.72rem; color: var(--taupe); letter-spacing: 0.06em; }
+.task-side .amount { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--gold); font-weight: 500; }
