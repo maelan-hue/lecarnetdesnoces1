@@ -825,7 +825,7 @@ body {
 .cal-legend { display:flex; gap:22px; flex-wrap:wrap; font-size:0.78rem; color:var(--mute); margin-bottom:24px; }
 .cal-legend-item { display:flex; align-items:center; gap:8px; }
 .cal-legend-dot { width:14px; height:14px; border:1px solid var(--bone); }
-.cal-legend-dot.booked    { background:var(--ink); border-color:var(--ink); }
+.cal-legend-dot.booked    { background:var(--terracotta); border-color:var(--terracotta); }
 .cal-legend-dot.available { border-color:var(--sage); background:rgba(122,139,110,0.12); }
 .cal-legend-dot.contact   { background:rgba(168,131,59,0.12); border:1px solid rgba(168,131,59,0.35); }
 
@@ -854,7 +854,7 @@ body {
 .cal-day.past:hover { transform:none; background:var(--paper); }
 
 .cal-day.available   { border-color:var(--sage); color:var(--sage); background:rgba(122,139,110,0.08); }
-.cal-day.unavailable { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+.cal-day.unavailable { background:var(--terracotta); color:var(--paper); border-color:var(--terracotta); }
 .cal-day.contact     { background:rgba(168,131,59,0.06); border-color:rgba(168,131,59,0.3); color:var(--gold); }
 
 .cal-disabled-notice { display:flex; align-items:flex-start; gap:18px; background:linear-gradient(135deg,rgba(176,96,74,0.04),rgba(168,131,59,0.03)); border:1px solid rgba(168,131,59,0.3); border-left:3px solid var(--gold); padding:24px 28px; margin-top:20px; }
