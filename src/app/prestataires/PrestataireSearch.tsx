@@ -68,9 +68,10 @@ function SearchContent({ coupleData, categories }: Props) {
     : "Date à définir";
 
   const getAvailLabel = (pro: Pro): "ok" | "unavailable" | "contact" => {
-    if (!coupleData.weddingDate)       return "contact";
-    if (!pro.calendarActive)           return "contact";
-    if (pro.availability.length === 0) return "contact";
+    if (!coupleData.weddingDate)                           return "contact";
+    if (!pro.calendarActive)                               return "contact";
+    if (!Array.isArray(pro.availability))                  return "contact";
+    if (pro.availability.length === 0)                     return "contact";
     const s = pro.availability[0].status;
     if (s === "AVAILABLE")   return "ok";
     if (s === "UNAVAILABLE") return "unavailable";
@@ -90,6 +91,15 @@ function SearchContent({ coupleData, categories }: Props) {
           Cochez pour sélectionner et envoyer un message groupé.
         </p>
       </div>
+
+      {/* Avertissement si pas de date */}
+      {!coupleData.weddingDate && (
+        <div className="tip" style={{ marginBottom: 20 }}>
+          🌿 <strong>Conseil —</strong> Renseignez votre date de mariage dans{" "}
+          <a href="/carnet" style={{ color: "var(--gold)" }}>votre carnet</a>{" "}
+          pour voir les disponibilités des prestataires à votre date.
+        </div>
+      )}
 
       {/* Barre de contexte */}
       <div className="context-bar">
