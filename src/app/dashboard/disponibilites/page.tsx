@@ -38,18 +38,22 @@ export default function DisponibilitesPage() {
   const [loading,    setLoading]    = useState(true);
 
   const load = useCallback(async () => {
-    const res  = await fetch("/api/pro/disponibilites");
-    const json = await res.json();
-    if (res.ok) {
-      setCalActive(json.calendarActive);
+    try {
+      const res = await fetch("/api/pro/disponibilites");
+      if (!res.ok) { setLoading(false); return; }
+      const json = await res.json();
+      setCalActive(json.calendarActive ?? false);
       const map: Record<string, DayStatus> = {};
-      for (const a of json.avails) {
+      for (const a of (json.avails ?? [])) {
         const d = new Date(a.date);
         map[toYMD(d)] = a.status === "AVAILABLE" ? "AVAILABLE" : "UNAVAILABLE";
       }
       setAvails(map);
+    } catch (e) {
+      console.error("Erreur chargement disponibilités:", e);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -77,7 +81,7 @@ export default function DisponibilitesPage() {
     if (cell.day === 0 || cell.past || !calActive) return;
     const next = nextStatus(cell.status);
 
-    // Mise à jour optimiste
+    // Mise à jour optimiste immédiate
     setAvails((a) => {
       const updated = { ...a };
       if (next === null) delete updated[cell.date];
@@ -85,12 +89,12 @@ export default function DisponibilitesPage() {
       return updated;
     });
 
-    // Persistance immédiate
-    await fetch("/api/pro/disponibilites", {
+    // Persistance en arrière-plan (silencieuse)
+    fetch("/api/pro/disponibilites", {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
       body:    JSON.stringify({ date: cell.date, status: next }),
-    });
+    }).catch(console.error);
   };
 
   const handleToggle = async () => {

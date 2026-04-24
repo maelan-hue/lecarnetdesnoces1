@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "prisma generate && next dev",
+    "dev": "next dev",
     "build": "prisma generate && next build",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
