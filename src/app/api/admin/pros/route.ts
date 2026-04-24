@@ -32,21 +32,29 @@ export async function PATCH(req: NextRequest) {
       data: { status: "ACTIVE", password: hashed, validatedAt: new Date() },
     });
 
-    // Initialiser les stats
     await db.proStats.upsert({
-      where: { proId: id },
+      where:  { proId: id },
       update: {},
       create: { proId: id },
     });
 
-    // Envoyer les credentials par email
+    // Tentative d'envoi email — peut échouer en dev
+    let emailSent = false;
     try {
       await sendCredentialsEmail({ to: pro.email, name: pro.name, password: tmpPassword });
+      emailSent = true;
     } catch (e) {
       console.error("Email credentials failed:", e);
     }
 
-    return NextResponse.json({ ok: true, message: `${pro.name} validé — email envoyé à ${pro.email}` });
+    // Le mot de passe temporaire est toujours retourné pour affichage admin
+    return NextResponse.json({
+      ok: true,
+      proName:   pro.name,
+      proEmail:  pro.email,
+      tmpPassword,
+      emailSent,
+    });
   }
 
   if (action === "suspend") {

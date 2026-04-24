@@ -9,8 +9,8 @@ export default function LandingPage() {
           <div className="landing-logo">Le Carnet <em>des noces</em></div>
           <div className="landing-nav-links">
             <a href="#comment-ca-marche">Comment ça marche</a>
-            <a href="/prestataires">Prestataires</a>
-            <Link href="/connexion">Se connecter</Link>
+            <Link href="/connexion">Espace couple</Link>
+            <Link href="/connexion-pro">Espace prestataire</Link>
             <Link href="/onboarding" className="gold">Commencer</Link>
           </div>
         </nav>
@@ -90,7 +90,12 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <Link href="/inscription-pro" className="btn gold large">Rejoindre Le Carnet</Link>
+          <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap", alignItems:"center" }}>
+            <Link href="/inscription-pro" className="btn gold large">Rejoindre Le Carnet</Link>
+            <Link href="/connexion-pro" style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"rgba(250,248,244,0.6)", fontSize:"0.95rem" }}>
+              Déjà inscrit ? Se connecter →
+            </Link>
+          </div>
         </div>
       </section>
 
