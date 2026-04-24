@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
-import { formatAmount } from "@/lib/stripe";
+import { formatAmount } from "@/lib/stripe-utils";
 
 type Props = {
   paymentLinkId:  string;

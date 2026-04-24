@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { formatAmount } from "@/lib/stripe";
+import { formatAmount } from "@/lib/stripe-utils";
 import PaymentForm from "./PaymentForm";
 import Link from "next/link";
 

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { computeAmounts, formatAmount } from "@/lib/stripe";
+import { computeAmounts, formatAmount } from "@/lib/stripe-utils";
 
 const TYPES = [
   { value: "ACOMPTE",  label: "Acompte" },

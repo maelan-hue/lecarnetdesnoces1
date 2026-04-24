@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { formatAmount } from "@/lib/stripe";
+import { formatAmount } from "@/lib/stripe-utils";
 
 type PaymentLink = {
   id: string; coupleName: string; coupleEmail: string; label: string;
