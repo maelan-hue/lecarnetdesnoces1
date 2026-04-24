@@ -30,6 +30,7 @@ const BASE_TASKS: TaskTemplate[] = [
   { phase: 3, position: 2,  category: "maquillage",   title: "Maquillage mariée",        timingLabel: "6 – 3 mois avant",   tipContext: "carnet_phase_3", description: "Forfait mariée + témoins disponible chez la plupart." },
   { phase: 3, position: 3,  category: "coiffure",     title: "Coiffure mariée",          timingLabel: "6 – 3 mois avant",   tipContext: "carnet_phase_3" },
   { phase: 3, position: 4,  category: "voiture",      title: "Voiture de mariage",       timingLabel: "6 – 3 mois avant",   tipContext: "carnet_phase_3", description: "Cabriolet, vintage ou luxe." },
+  { phase: 3, position: 5,  category: "boissons",     title: "Vins & champagne",         timingLabel: "6 – 3 mois avant",   tipContext: "carnet_phase_3", description: "Commandez à l'avance — cave locale, domaine viticole ou caviste. Comptez 1 bouteille / 3 invités pour le champagne." },
 
   // Phase 4 — Les dernières touches (3-1 mois)
   { phase: 4, position: 1,  category: "ongles",       title: "Ongles mariée",            timingLabel: "3 – 1 mois avant",   tipContext: "carnet_phase_4" },
