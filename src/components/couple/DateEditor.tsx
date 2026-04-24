@@ -75,28 +75,40 @@ export default function DateEditor({
     );
   }
 
-  // Pas de date → invite à la saisir
+  // Pas de date → invite à la saisir + compteur invités quand même
   if (!weddingDate) {
     return (
-      <div
-        style={{
-          display:"flex", alignItems:"center", justifyContent:"space-between",
-          padding:"20px 24px", background:"var(--ivory)", border:"1px dashed var(--bone)",
-          borderLeft:"2px solid var(--gold)", marginBottom:32, gap:20, flexWrap:"wrap",
-          cursor:"pointer",
-        }}
-        onClick={() => setEditing(true)}
-      >
-        <div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.1rem", fontWeight:500, marginBottom:3 }}>
-            Renseignez votre date de mariage
+      <>
+        <div
+          style={{
+            display:"flex", alignItems:"center", justifyContent:"space-between",
+            padding:"20px 24px", background:"var(--ivory)", border:"1px dashed var(--bone)",
+            borderLeft:"2px solid var(--gold)", marginBottom:0, gap:20, flexWrap:"wrap",
+            cursor:"pointer",
+          }}
+          onClick={() => setEditing(true)}
+        >
+          <div>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.1rem", fontWeight:500, marginBottom:3 }}>
+              Renseignez votre date de mariage
+            </div>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.9rem", color:"var(--mute)" }}>
+              Pour afficher le compteur et personnaliser votre planning.
+            </div>
           </div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.9rem", color:"var(--mute)" }}>
-            Pour afficher le compteur et personnaliser votre planning.
-          </div>
+          <button className="btn gold small">Ajouter une date →</button>
         </div>
-        <button className="btn gold small">Ajouter une date →</button>
-      </div>
+
+        {/* Compteur invités même sans date */}
+        <div className="countdown" style={{ marginBottom:32 }}>
+          <a href="/invites" style={{ textDecoration:"none" }}>
+            <div className="cd" style={{ cursor:"pointer" }}>
+              <span className="cd-n" style={{ color:"var(--gold)" }}>{guestTotal || guestCount || "—"}</span>
+              <span className="cd-l">Invités →</span>
+            </div>
+          </a>
+        </div>
+      </>
     );
   }
 
