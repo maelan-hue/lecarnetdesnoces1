@@ -20,7 +20,8 @@
       "Bash(pkill -f \"next dev\")",
       "Bash(git add *)",
       "Bash(git commit *)",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(kill 4810)"
     ]
   }
 }

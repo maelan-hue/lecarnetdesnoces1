@@ -63,6 +63,7 @@ model Pro {
 
   profilePhoto    String?
   portfolioPhotos String[]
+  calendarActive  Boolean @default(false)
 
   tarifs        ProTarif[]
   availability  ProAvailability[]
