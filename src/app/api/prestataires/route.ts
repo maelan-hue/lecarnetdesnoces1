@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     select: {
       id: true, slug: true, name: true, tagline: true,
       category: true, ambiances: true, city: true,
-      department: true, portfolioPhotos: true,
+      department: true, portfolioPhotos: true, profilePhoto: true,
       tarifs: { orderBy: { position: "asc" }, take: 1, select: { priceFrom: true } },
       availability: date
         ? { where: { date: new Date(date) }, select: { status: true } }

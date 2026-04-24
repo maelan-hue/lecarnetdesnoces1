@@ -9,6 +9,7 @@ type Pro = {
   id: string; slug: string; name: string; tagline: string | null;
   category: string; ambiances: string[]; city: string | null;
   department: string | null; portfolioPhotos: string[];
+  profilePhoto: string | null;
   tarifs: { priceFrom: number }[];
   availability: { status: string }[];
 };
@@ -181,7 +182,12 @@ function SearchContent({ coupleData, categories }: Props) {
                   {isSel ? "✓" : ""}
                 </div>
 
-                <div className="presta-photo serif">{initials(pro.name)}</div>
+                {pro.profilePhoto ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={pro.profilePhoto} alt={pro.name} className="presta-photo" style={{ objectFit:"cover", borderRadius:0 }} />
+                ) : (
+                  <div className="presta-photo serif">{initials(pro.name)}</div>
+                )}
 
                 <div>
                   <div className="presta-name">{pro.name}</div>

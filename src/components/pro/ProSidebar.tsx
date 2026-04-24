@@ -15,9 +15,9 @@ const MENU = [
   { href: "/dashboard/compte",         label: "Mon compte",         section: "Mon profil",  badge: false },
 ];
 
-type Props = { name: string; category: string; initials: string; slug: string };
+type Props = { name: string; category: string; initials: string; slug: string; profilePhoto?: string | null };
 
-export default function ProSidebar({ name, category, initials, slug }: Props) {
+export default function ProSidebar({ name, category, initials, slug, profilePhoto }: Props) {
   const pathname = usePathname();
   const router   = useRouter();
   const [unread, setUnread] = useState(0);
@@ -43,7 +43,12 @@ export default function ProSidebar({ name, category, initials, slug }: Props) {
   return (
     <aside className="pro-side">
       <div className="pro-profile">
-        <div className="pro-avatar">{initials}</div>
+        {profilePhoto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={profilePhoto} alt={name} style={{ width:46, height:46, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} />
+        ) : (
+          <div className="pro-avatar">{initials}</div>
+        )}
         <div>
           <div className="pro-name">{name}</div>
           <div className="pro-role">{category}</div>

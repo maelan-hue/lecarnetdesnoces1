@@ -74,7 +74,12 @@ export default async function FichePubliquePage({ params }: Props) {
 
         {/* En-tête */}
         <div className="presta-hero" style={{ marginBottom:36 }}>
-          <div className="presta-hero-photo serif">{initials}</div>
+          {pro.profilePhoto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={pro.profilePhoto} alt={pro.name} className="presta-hero-photo" style={{ objectFit:"cover" }} />
+          ) : (
+            <div className="presta-hero-photo serif">{initials}</div>
+          )}
           <div>
             <div className="eyebrow">{PRO_CATEGORIES[pro.category]}</div>
             <div className="presta-hero-name">{pro.name}</div>
