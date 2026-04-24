@@ -3,11 +3,15 @@ import { verifyToken } from "@/lib/auth";
 
 const COUPLE_PATHS = ["/carnet", "/invites", "/messages", "/prestataire", "/onboarding/fin"];
 const PRO_PATHS    = ["/dashboard", "/paiements", "/messagerie", "/fiche", "/disponibilites", "/portfolio", "/banque", "/statistiques"];
-const ADMIN_PATHS  = ["/admin"];
+const ADMIN_PATHS  = ["/admin/dashboard"];
+
+// Pages de connexion — jamais protégées
+const LOGIN_PAGES  = ["/connexion", "/connexion-pro", "/admin/connexion"];
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const token = req.cookies.get("session")?.value;
+
+  if (LOGIN_PAGES.some((p) => pathname.startsWith(p))) return NextResponse.next();
 
   const isCouplePath = COUPLE_PATHS.some((p) => pathname.startsWith(p));
   const isProPath    = PRO_PATHS.some((p) => pathname.startsWith(p));
@@ -15,10 +19,11 @@ export async function proxy(req: NextRequest) {
 
   if (!isCouplePath && !isProPath && !isAdminPath) return NextResponse.next();
 
+  const token   = req.cookies.get("session")?.value;
   if (!token) return redirectToLogin(req, pathname);
 
   const payload = await verifyToken(token);
-  if (!payload) return redirectToLogin(req, pathname);
+  if (!payload)  return redirectToLogin(req, pathname);
 
   if (isCouplePath && payload.role !== "couple") return redirectToLogin(req, pathname);
   if (isProPath    && payload.role !== "pro")    return redirectToLogin(req, pathname);
@@ -55,6 +60,9 @@ export const config = {
     "/portfolio/:path*",
     "/banque/:path*",
     "/statistiques/:path*",
-    "/admin/:path*",
+    "/admin/dashboard/:path*",
+    "/connexion",
+    "/connexion-pro",
+    "/admin/connexion",
   ],
 };
