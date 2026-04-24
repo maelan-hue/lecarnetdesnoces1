@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DateEditor from "@/components/couple/DateEditor";
+import Shortlist from "@/components/couple/Shortlist";
 
 // Correspondance category (tâche) → ProCategory (enum Prisma)
 const CATEGORY_TO_PRO: Record<string, string> = {
@@ -108,6 +109,9 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       />
 
       {/* ── PHASES ── */}
+      {/* Prestataires sauvegardés */}
+      <Shortlist />
+
       <div className="section-title" style={{ marginBottom: 6 }}>
         Votre <em style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", color: "var(--gold)" }}>parcours</em>
       </div>

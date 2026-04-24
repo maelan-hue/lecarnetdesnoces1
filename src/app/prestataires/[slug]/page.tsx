@@ -4,6 +4,7 @@ import { getSession } from "@/lib/auth";
 import { PRO_CATEGORIES, AMBIANCES } from "@/lib/utils";
 import type { Metadata } from "next";
 import Link from "next/link";
+import SaveProButton from "@/components/couple/SaveProButton";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,6 +30,27 @@ export default async function FichePubliquePage({ params }: Props) {
 
   const isCouple = session?.role === "couple";
   const isPro    = session?.role === "pro" && session.sub === pro.id;
+
+  // Disponibilité à la date du couple
+  let availStatus: "ok" | "unavailable" | "contact" = "contact";
+  let isSaved = false;
+  if (isCouple && session) {
+    const couple = await db.couple.findUnique({
+      where: { id: session.sub },
+      select: { weddingDate: true },
+    });
+    if (couple?.weddingDate && pro.calendarActive) {
+      const avail = await db.proAvailability.findUnique({
+        where: { proId_date: { proId: pro.id, date: couple.weddingDate } },
+      });
+      if (avail?.status === "AVAILABLE")   availStatus = "ok";
+      if (avail?.status === "UNAVAILABLE") availStatus = "unavailable";
+    }
+    const sel = await db.coupleProSelection.findUnique({
+      where: { coupleId_proId: { coupleId: session.sub, proId: pro.id } },
+    });
+    isSaved = !!sel;
+  }
 
   // Incrémenter les vues
   await db.proStats.upsert({
@@ -62,9 +84,12 @@ export default async function FichePubliquePage({ params }: Props) {
             Modifier ma fiche
           </Link>
         ) : isCouple ? (
-          <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn gold small">
-            Contacter {pro.name.split(/\s+/)[0]}
-          </Link>
+          <div style={{ display:"flex", gap:8 }}>
+            <SaveProButton proId={pro.id} initialSaved={isSaved} />
+            <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn gold small">
+              Contacter
+            </Link>
+          </div>
         ) : (
           <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>
         )}
@@ -87,6 +112,31 @@ export default async function FichePubliquePage({ params }: Props) {
             <div className="presta-hero-meta">
               {[pro.city, pro.department ? `Dép. ${pro.department}` : null, pro.radiusKm ? `Rayon ${pro.radiusKm} km` : null].filter(Boolean).join(" · ")}
             </div>
+
+            {/* Disponibilité à la date du couple */}
+            {isCouple && (
+              <div style={{ marginTop:12, display:"flex", gap:10, alignItems:"center", flexWrap:"wrap" }}>
+                {availStatus === "ok" && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(122,139,110,0.12)", color:"var(--sage)", padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500 }}>
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--sage)", display:"inline-block" }} />
+                    Disponible à votre date
+                  </span>
+                )}
+                {availStatus === "unavailable" && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(176,96,74,0.12)", color:"var(--terracotta)", padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500 }}>
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--terracotta)", display:"inline-block" }} />
+                    Indisponible à votre date
+                  </span>
+                )}
+                {availStatus === "contact" && (
+                  <span style={{ display:"inline-flex", alignItems:"center", gap:6, background:"rgba(168,131,59,0.12)", color:"var(--gold)", padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500 }}>
+                    <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--gold)", display:"inline-block" }} />
+                    À contacter
+                  </span>
+                )}
+              </div>
+            )}
+
             {pro.ambiances.length > 0 && (
               <div style={{ marginTop:10, display:"flex", gap:6, flexWrap:"wrap" }}>
                 {pro.ambiances.map((a) => (

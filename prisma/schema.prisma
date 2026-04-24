@@ -30,6 +30,7 @@ model Couple {
   guests        Guest[]
   conversations Conversation[]
   payments      Payment[]
+  selections    CoupleProSelection[]
 
   @@map("couples")
 }
@@ -72,6 +73,7 @@ model Pro {
   paymentLinks  PaymentLink[]
   stats         ProStats?
   tasks         CoupleTask[]
+  selections    CoupleProSelection[]
 
   @@map("pros")
 }
@@ -318,6 +320,20 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+// ─── SHORTLIST COUPLE ────────────────────────────────────────────────────────
+
+model CoupleProSelection {
+  id        String   @id @default(cuid())
+  coupleId  String
+  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  proId     String
+  pro       Pro      @relation(fields: [proId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([coupleId, proId])
+  @@map("couple_pro_selections")
 }
 
 // ─── CONTENU ÉDITORIAL ───────────────────────────────────────────────────────
