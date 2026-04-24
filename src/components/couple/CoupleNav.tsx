@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/invites",      label: "Invités" },
   { href: "/prestataires", label: "Prestataires" },
   { href: "/messages",     label: "Messages" },
+  { href: "/compte",       label: "Mon compte" },
 ];
 
 export default function CoupleNav({ prenoms }: { prenoms: string }) {

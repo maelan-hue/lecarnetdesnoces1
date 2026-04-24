@@ -11,6 +11,7 @@ const MENU = [
   { href: "/dashboard/portfolio",      label: "Portfolio & tarifs", section: "Mon profil" },
   { href: "/dashboard/banque",         label: "Compte bancaire",    section: "Mon profil" },
   { href: "/dashboard/statistiques",   label: "Statistiques",       section: "Mon profil" },
+  { href: "/dashboard/compte",         label: "Mon compte",         section: "Mon profil" },
 ];
 
 type Props = { name: string; category: string; initials: string; slug: string };
