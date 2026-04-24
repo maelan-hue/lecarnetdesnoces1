@@ -863,3 +863,60 @@ body {
 .cal-disabled-title { font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:500; color:var(--ink); margin-bottom:6px; }
 .cal-disabled-text  { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.95rem; color:var(--ink); line-height:1.55; }
 .cal-disabled-text strong { color:var(--gold); font-weight:500; font-style:normal; }
+
+/* ═══════════════════════════════════════════
+   FAVORIS / VENDOR RELATIONS
+   ═══════════════════════════════════════════ */
+
+.heart-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1.2rem; line-height: 1; padding: 4px;
+  color: var(--bone); transition: color 0.2s, transform 0.15s;
+  flex-shrink: 0;
+}
+.heart-btn:hover { color: var(--terracotta); transform: scale(1.15); }
+.heart-btn.filled { color: var(--terracotta); }
+.heart-btn:disabled { opacity: 0.4; cursor: default; }
+
+.retain-btn {
+  background: none; border: 1px solid var(--bone); cursor: pointer;
+  font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--mute); padding: 5px 10px; transition: all 0.2s;
+  font-family: 'Jost', sans-serif;
+}
+.retain-btn:hover { border-color: var(--gold); color: var(--gold); }
+.retain-btn.active { border-color: var(--gold); background: rgba(168,131,59,0.08); color: var(--gold); }
+
+/* Carte retenu (dorée) */
+.retained-card {
+  background: linear-gradient(135deg, var(--paper) 70%, rgba(168,131,59,0.06));
+  border: 1px solid var(--gold);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.retained-badge {
+  font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--gold); font-weight: 500; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Floating action bar */
+.fab {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  background: var(--ink); color: var(--paper);
+  padding: 14px 22px;
+  display: flex; gap: 12px; align-items: center;
+  box-shadow: 0 10px 40px rgba(26,21,16,0.3);
+  z-index: 90; white-space: nowrap; flex-wrap: wrap;
+  justify-content: center;
+}
+.fab-count { font-family: 'Cormorant Garamond', serif; font-size: 1rem; }
+.fab-count em { color: var(--gold); font-style: italic; }
+.fab-sep { width: 1px; height: 20px; background: rgba(250,248,244,0.15); }
+
+/* Section catégorie vide */
+.vendor-empty {
+  background: var(--ivory); border: 1px dashed var(--bone);
+  padding: 24px 28px; text-align: center;
+}

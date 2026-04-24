@@ -1,26 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DateEditor from "@/components/couple/DateEditor";
-import Shortlist from "@/components/couple/Shortlist";
-
-// Correspondance category (tâche) → ProCategory (enum Prisma)
-const CATEGORY_TO_PRO: Record<string, string> = {
-  lieu:            "LIEU",
-  traiteur:        "TRAITEUR",
-  photographe:     "PHOTOGRAPHE",
-  videaste:        "VIDEASTE",
-  dj_musicien:     "DJ_MUSICIEN",
-  fleuriste:       "FLEURISTE",
-  decoration:      "DECORATION_PAPETERIE",
-  maquillage:      "COIFFURE_MAQUILLAGE",
-  coiffure:        "COIFFURE_MAQUILLAGE",
-  officiant:       "OFFICIANT",
-  wedding_planner: "WEDDING_PLANNER",
-  boissons:        "VINS_CHAMPAGNE",
-};
+import CategoryVendorSection from "@/components/couple/CategoryVendorSection";
+import { CATEGORY_TO_PRO } from "@/lib/utils";
 
 type Task = {
   id: string; title: string; description?: string | null;
@@ -43,20 +28,28 @@ type CarnetData = {
   phases: Phase[];
 };
 
-const CHECK_ICON: Record<string, string> = {
-  DONE: "✓", TODO: "", IN_PROGRESS: "",
+type Relation = {
+  id: string; proId: string; status: "FAVORITE" | "RETAINED"; category: string;
+  pro: { id: string; name: string; slug: string; category: string; tagline: string | null; city: string | null; profilePhoto: string | null; tarifs: { priceFrom: number }[] };
 };
-const TASK_CLASS: Record<string, string> = {
-  DONE: "done", TODO: "", IN_PROGRESS: "",
-};
+
+const TASK_CLASS: Record<string, string> = { DONE: "done", TODO: "", IN_PROGRESS: "" };
 
 export default function CarnetClient({ data }: { data: CarnetData }) {
   const router = useRouter();
-  // Phase 1 ouverte par défaut, les autres selon avancement
+  const [relations, setRelations] = useState<Relation[]>([]);
+
+  // Charger les relations au montage
+  useEffect(() => {
+    fetch("/api/couple/vendors")
+      .then((r) => r.ok ? r.json() : [])
+      .then((d) => setRelations(Array.isArray(d) ? d : []))
+      .catch(() => {});
+  }, []);
+
   const [open, setOpen] = useState<Record<number, boolean>>(() => {
     const state: Record<number, boolean> = {};
     data.phases.forEach((p) => { state[p.phaseNum] = p.done < p.total; });
-    // Toujours ouvrir au moins la première phase non terminée
     const firstOpen = data.phases.find((p) => p.done < p.total);
     if (firstOpen) state[firstOpen.phaseNum] = true;
     return state;
@@ -67,11 +60,10 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
   const prenomParts = data.prenoms.split(/[&\s]+/).filter(Boolean);
   const firstName   = prenomParts[0] ?? data.prenoms;
   const secondName  = prenomParts.slice(1).join(" ");
+  const budgetEngageEuros = data.budgetEngage;
 
-  const fmtAmount = (cents: number) =>
-    (cents / 100).toLocaleString("fr-FR", { minimumFractionDigits: 0 }) + " €";
-
-  const budgetEngageEuros = data.budgetEngage; // déjà en euros
+  // Catégories ayant des relations (favoris ou retenus)
+  const usedCategories = [...new Set(relations.map((r) => r.category))];
 
   return (
     <div className="container">
@@ -108,10 +100,42 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
         guestTotal={data.guestTotal}
       />
 
-      {/* ── PHASES ── */}
-      {/* Prestataires sauvegardés */}
-      <Shortlist />
+      {/* ── PRESTATAIRES SAUVEGARDÉS ── */}
+      {usedCategories.length > 0 && (
+        <div style={{ marginBottom: 40 }}>
+          <div className="section-title" style={{ marginBottom: 6 }}>
+            Mes <em style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"var(--gold)" }}>prestataires</em>
+          </div>
+          <p className="section-hint">
+            {relations.filter((r) => r.status === "RETAINED").length} retenu{relations.filter((r) => r.status === "RETAINED").length > 1 ? "s" : ""} ·{" "}
+            {relations.filter((r) => r.status === "FAVORITE").length} favori{relations.filter((r) => r.status === "FAVORITE").length > 1 ? "s" : ""} en comparaison
+          </p>
+          {usedCategories.map((cat) => {
+            const catRelations = relations.filter((r) => r.category === cat);
+            const taskCat = Object.entries(CATEGORY_TO_PRO).find(([, v]) => v === cat)?.[0] ?? cat.toLowerCase();
+            return (
+              <div key={cat} style={{ marginBottom: 24 }}>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.2rem", fontWeight:500, marginBottom:10, paddingBottom:8, borderBottom:"1px dashed var(--bone)" }}>
+                  {cat.charAt(0) + cat.slice(1).toLowerCase().replace(/_/g, " ")}
+                </div>
+                <CategoryVendorSection
+                  category={cat}
+                  taskCategory={taskCat}
+                  relations={catRelations}
+                  onRelationsChange={(updated) => {
+                    setRelations((prev) => [
+                      ...prev.filter((r) => r.category !== cat),
+                      ...updated,
+                    ]);
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
 
+      {/* ── PHASES ── */}
       <div className="section-title" style={{ marginBottom: 6 }}>
         Votre <em style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", color: "var(--gold)" }}>parcours</em>
       </div>
@@ -128,9 +152,8 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
           const badgeClass = allDone ? "b-done" : hasActive ? "b-cur" : "b-wait";
           const badgeText  = allDone
             ? `✓ ${phase.done} / ${phase.total} validées`
-            : phase.done > 0
-              ? `${phase.done} / ${phase.total} validés`
-              : `À venir · ${phase.total} étapes`;
+            : phase.done > 0 ? `${phase.done} / ${phase.total} validés`
+            : `À venir · ${phase.total} étapes`;
 
           return (
             <div key={phase.phaseNum} className="phase">
@@ -153,25 +176,27 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
               <div className="phase-body" style={{ maxHeight: isOpen ? 2000 : 0 }}>
                 <div className="phase-inner">
                   {phase.tasks.map((task) => {
-                    const isPaid  = task.amountPaid > 0;
-                    const isDone  = task.status === "DONE" || isPaid;
-                    const cls     = isPaid ? "paid" : TASK_CLASS[task.status];
-
+                    const isPaid = task.amountPaid > 0;
+                    const isDone = task.status === "DONE" || isPaid;
+                    const cls    = isPaid ? "paid" : TASK_CLASS[task.status];
                     const proCategory = CATEGORY_TO_PRO[task.category];
-                    const searchUrl   = proCategory
-                      ? `/prestataires?category=${proCategory}`
-                      : `/prestataires`;
+                    const searchUrl   = proCategory ? `/prestataires?category=${proCategory}` : `/prestataires`;
+
+                    // Compter favoris et retenu pour cette catégorie
+                    const catRels    = proCategory ? relations.filter((r) => r.category === proCategory) : [];
+                    const catRetained = catRels.find((r) => r.status === "RETAINED");
+                    const catFavCount = catRels.filter((r) => r.status === "FAVORITE").length;
 
                     return (
-                      <div
-                        key={task.id}
-                        className={`task clickable ${cls}`}
-                        onClick={() => router.push(searchUrl)}
-                      >
+                      <div key={task.id} className={`task clickable ${cls}`} onClick={() => router.push(searchUrl)}>
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
                           <div className="task-name">{task.title}</div>
-                          {task.proName ? (
+                          {catRetained ? (
+                            <div className="task-pres" style={{ color:"var(--gold)" }}>✦ {catRetained.pro.name}</div>
+                          ) : catFavCount > 0 ? (
+                            <div className="task-pres">{catFavCount} favori{catFavCount > 1 ? "s" : ""} en comparaison</div>
+                          ) : task.proName ? (
                             <div className="task-pres">{task.proName}</div>
                           ) : task.description ? (
                             <div className="task-pres">{task.description}</div>
@@ -183,8 +208,8 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                           ) : task.quoteTotal ? (
                             <><div className="amount">{task.quoteTotal.toLocaleString("fr-FR")} €</div>devis</>
                           ) : (
-                            <span style={{ color: isDone ? "var(--ok)" : "var(--terracotta)" }}>
-                              {isDone ? "Réservé ✓" : "À choisir →"}
+                            <span style={{ color: isDone ? "var(--ok)" : catRetained ? "var(--gold)" : catFavCount > 0 ? "var(--gold)" : "var(--terracotta)" }}>
+                              {isDone ? "Réservé ✓" : catRetained ? "Retenu →" : catFavCount > 0 ? `${catFavCount} ♥` : "À choisir →"}
                             </span>
                           )}
                         </div>
@@ -197,7 +222,6 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
           );
         })}
       </div>
-
     </div>
   );
 }

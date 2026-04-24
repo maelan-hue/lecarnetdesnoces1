@@ -47,6 +47,22 @@ export const PRO_CATEGORIES: Record<string, string> = {
   AUTRE:            "Autre",
 };
 
+// Correspondance category tâche (ex: "photographe") → ProCategory enum (ex: "PHOTOGRAPHE")
+export const CATEGORY_TO_PRO: Record<string, string> = {
+  lieu:            "LIEU",
+  traiteur:        "TRAITEUR",
+  photographe:     "PHOTOGRAPHE",
+  videaste:        "VIDEASTE",
+  dj_musicien:     "DJ_MUSICIEN",
+  fleuriste:       "FLEURISTE",
+  decoration:      "DECORATION_PAPETERIE",
+  maquillage:      "COIFFURE_MAQUILLAGE",
+  coiffure:        "COIFFURE_MAQUILLAGE",
+  officiant:       "OFFICIANT",
+  wedding_planner: "WEDDING_PLANNER",
+  boissons:        "VINS_CHAMPAGNE",
+};
+
 export const AMBIANCES: Record<string, string> = {
   champetre: "Champêtre",
   classique: "Classique chic",

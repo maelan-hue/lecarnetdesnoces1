@@ -26,11 +26,11 @@ model Couple {
   planningStage  String?
   onboardingDone Boolean @default(false)
 
-  tasks         CoupleTask[]
-  guests        Guest[]
-  conversations Conversation[]
-  payments      Payment[]
-  selections    CoupleProSelection[]
+  tasks           CoupleTask[]
+  guests          Guest[]
+  conversations   Conversation[]
+  payments        Payment[]
+  vendorRelations VendorRelation[]
 
   @@map("couples")
 }
@@ -70,10 +70,10 @@ model Pro {
   availability  ProAvailability[]
   conversations Conversation[]
   payments      Payment[]
-  paymentLinks  PaymentLink[]
-  stats         ProStats?
-  tasks         CoupleTask[]
-  selections    CoupleProSelection[]
+  paymentLinks    PaymentLink[]
+  stats           ProStats?
+  tasks           CoupleTask[]
+  vendorRelations VendorRelation[]
 
   @@map("pros")
 }
@@ -322,18 +322,26 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// ─── SHORTLIST COUPLE ────────────────────────────────────────────────────────
+// ─── RELATIONS PRESTATAIRES ──────────────────────────────────────────────────
 
-model CoupleProSelection {
-  id        String   @id @default(cuid())
+model VendorRelation {
+  id        String               @id @default(cuid())
   coupleId  String
-  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  couple    Couple               @relation(fields: [coupleId], references: [id], onDelete: Cascade)
   proId     String
-  pro       Pro      @relation(fields: [proId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  pro       Pro                  @relation(fields: [proId], references: [id], onDelete: Cascade)
+  status    VendorRelationStatus
+  category  String               // dénormalisé pour requêtes rapides par catégorie
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
 
   @@unique([coupleId, proId])
-  @@map("couple_pro_selections")
+  @@map("vendor_relations")
+}
+
+enum VendorRelationStatus {
+  FAVORITE
+  RETAINED
 }
 
 // ─── CONTENU ÉDITORIAL ───────────────────────────────────────────────────────

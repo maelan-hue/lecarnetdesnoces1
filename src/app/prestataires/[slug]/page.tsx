@@ -4,7 +4,7 @@ import { getSession } from "@/lib/auth";
 import { PRO_CATEGORIES, AMBIANCES } from "@/lib/utils";
 import type { Metadata } from "next";
 import Link from "next/link";
-import SaveProButton from "@/components/couple/SaveProButton";
+import FicheHeartButton from "@/components/couple/FicheHeartButton";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -46,10 +46,10 @@ export default async function FichePubliquePage({ params }: Props) {
       if (avail?.status === "AVAILABLE")   availStatus = "ok";
       if (avail?.status === "UNAVAILABLE") availStatus = "unavailable";
     }
-    const sel = await db.coupleProSelection.findUnique({
+    const rel = await db.vendorRelation.findUnique({
       where: { coupleId_proId: { coupleId: session.sub, proId: pro.id } },
     });
-    isSaved = !!sel;
+    isSaved = !!rel;
   }
 
   // Incrémenter les vues
@@ -84,8 +84,8 @@ export default async function FichePubliquePage({ params }: Props) {
             Modifier ma fiche
           </Link>
         ) : isCouple ? (
-          <div style={{ display:"flex", gap:8 }}>
-            <SaveProButton proId={pro.id} initialSaved={isSaved} />
+          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+            <FicheHeartButton proId={pro.id} category={pro.category} initialSaved={isSaved} />
             <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn gold small">
               Contacter
             </Link>

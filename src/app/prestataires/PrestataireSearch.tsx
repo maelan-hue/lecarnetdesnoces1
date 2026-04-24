@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AMBIANCES } from "@/lib/utils";
+import FloatingActionBar from "@/components/couple/FloatingActionBar";
 
 type Pro = {
   id: string; slug: string; name: string; tagline: string | null;
@@ -14,6 +15,8 @@ type Pro = {
   availability: { status: string }[];
 };
 
+type Relation = { proId: string; status: "FAVORITE" | "RETAINED"; category: string };
+
 type Props = {
   coupleData: { weddingDate: string | null; weddingCity: string | null; guestCount: number | null; ambiances: string[] };
   categories: { value: string; label: string }[];
@@ -23,12 +26,13 @@ function SearchContent({ coupleData, categories }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
 
-  const [pros,     setPros]     = useState<Pro[]>([]);
-  const [loading,  setLoading]  = useState(true);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Initialiser category depuis l'URL (?category=PHOTOGRAPHE)
-  const [category, setCategory] = useState(searchParams.get("category") ?? "");
-  const [ambiance, setAmbiance] = useState("");
+  const [pros,      setPros]      = useState<Pro[]>([]);
+  const [relations, setRelations] = useState<Relation[]>([]);
+  const [loading,   setLoading]   = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [selected,  setSelected]  = useState<Set<string>>(new Set());
+  const [category,  setCategory]  = useState(searchParams.get("category") ?? "");
+  const [ambiance,  setAmbiance]  = useState("");
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -36,50 +40,85 @@ function SearchContent({ coupleData, categories }: Props) {
     if (category) params.set("category", category);
     if (ambiance) params.set("ambiance", ambiance);
     if (coupleData.weddingDate) params.set("date", coupleData.weddingDate.split("T")[0]);
-    const res = await fetch(`/api/prestataires?${params}`);
-    if (res.ok) setPros(await res.json());
+    const [prosRes, relRes] = await Promise.all([
+      fetch(`/api/prestataires?${params}`),
+      fetch("/api/couple/vendors"),
+    ]);
+    if (prosRes.ok) { const d = await prosRes.json(); setPros(Array.isArray(d) ? d : []); }
+    if (relRes.ok)  { const d = await relRes.json();  setRelations(Array.isArray(d) ? d : []); }
     setLoading(false);
   }, [category, ambiance, coupleData.weddingDate]);
 
   useEffect(() => { load(); }, [load]);
 
-  // Checkbox seule → sélection (sans naviguer)
+  const getRelation = (proId: string) => relations.find((r) => r.proId === proId) ?? null;
+
+  const toggleFavorite = async (pro: Pro, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const rel = getRelation(pro.id);
+    setActionLoading(true);
+
+    if (rel) {
+      // Retirer (favori ou retenu)
+      await fetch("/api/couple/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proId: pro.id, category: pro.category, action: "remove" }),
+      });
+      setRelations((r) => r.filter((x) => x.proId !== pro.id));
+    } else {
+      // Ajouter en favori
+      const res  = await fetch("/api/couple/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proId: pro.id, category: pro.category, action: "favorite" }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setRelations((r) => [...r.filter((x) => x.proId !== pro.id), { proId: pro.id, status: "FAVORITE", category: pro.category }]);
+      } else {
+        alert(json.error ?? "Erreur");
+      }
+    }
+    setActionLoading(false);
+  };
+
   const toggleSelect = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    setSelected((s) => {
-      const next = new Set(s);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
   };
 
-  // Clic carte → page profil
-  const goToProfile = (slug: string) => {
-    router.push(`/prestataires/${slug}`);
+  const handleAddFavorites = async () => {
+    setActionLoading(true);
+    for (const proId of Array.from(selected)) {
+      const pro = pros.find((p) => p.id === proId);
+      if (!pro || getRelation(proId)) continue;
+      const res = await fetch("/api/couple/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ proId, category: pro.category, action: "favorite" }),
+      });
+      if (res.ok) setRelations((r) => [...r.filter((x) => x.proId !== proId), { proId, status: "FAVORITE", category: pro.category }]);
+    }
+    setSelected(new Set());
+    setActionLoading(false);
   };
-
-  const handleContact = () => {
-    const ids = Array.from(selected).join(",");
-    router.push(`/messages/nouveau?pros=${ids}`);
-  };
-
-  const weddingLabel = coupleData.weddingDate
-    ? new Date(coupleData.weddingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
-    : "Date à définir";
 
   const getAvailLabel = (pro: Pro): "ok" | "unavailable" | "contact" => {
-    if (!coupleData.weddingDate)                           return "contact";
-    if (!pro.calendarActive)                               return "contact";
-    if (!Array.isArray(pro.availability))                  return "contact";
-    if (pro.availability.length === 0)                     return "contact";
+    if (!coupleData.weddingDate)               return "contact";
+    if (!pro.calendarActive)                   return "contact";
+    if (!Array.isArray(pro.availability) || pro.availability.length === 0) return "contact";
     const s = pro.availability[0].status;
     if (s === "AVAILABLE")   return "ok";
     if (s === "UNAVAILABLE") return "unavailable";
     return "contact";
   };
 
-  const initials = (name: string) =>
-    name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+  const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+
+  const weddingLabel = coupleData.weddingDate
+    ? new Date(coupleData.weddingDate).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+    : "Date à définir";
 
   return (
     <div className="container">
@@ -87,42 +126,27 @@ function SearchContent({ coupleData, categories }: Props) {
         <div className="eyebrow">Artisans du mariage</div>
         <h1 className="page-title">Nos <em>prestataires</em></h1>
         <p className="page-sub">
-          Cliquez sur une fiche pour découvrir le portfolio.{" "}
-          Cochez pour sélectionner et envoyer un message groupé.
+          Cliquez sur ♥ pour ajouter aux favoris. Cochez pour sélectionner et envoyer un message groupé.
         </p>
       </div>
 
-      {/* Avertissement si pas de date */}
       {!coupleData.weddingDate && (
         <div className="tip" style={{ marginBottom: 20 }}>
           🌿 <strong>Conseil —</strong> Renseignez votre date de mariage dans{" "}
           <a href="/carnet" style={{ color: "var(--gold)" }}>votre carnet</a>{" "}
-          pour voir les disponibilités des prestataires à votre date.
+          pour voir les disponibilités.
         </div>
       )}
 
       {/* Barre de contexte */}
       <div className="context-bar">
         <div className="ctx-facts">
-          <div className="ctx-fact">
-            <div className="ctx-fact-lbl">Date</div>
-            <div className="ctx-fact-val">{weddingLabel}</div>
-          </div>
-          {coupleData.weddingCity && (
-            <div className="ctx-fact">
-              <div className="ctx-fact-lbl">Lieu</div>
-              <div className="ctx-fact-val">{coupleData.weddingCity}</div>
-            </div>
-          )}
-          {coupleData.guestCount && (
-            <div className="ctx-fact">
-              <div className="ctx-fact-lbl">Invités</div>
-              <div className="ctx-fact-val">{coupleData.guestCount}</div>
-            </div>
-          )}
+          <div className="ctx-fact"><div className="ctx-fact-lbl">Date</div><div className="ctx-fact-val">{weddingLabel}</div></div>
+          {coupleData.weddingCity && <div className="ctx-fact"><div className="ctx-fact-lbl">Lieu</div><div className="ctx-fact-val">{coupleData.weddingCity}</div></div>}
+          {coupleData.guestCount  && <div className="ctx-fact"><div className="ctx-fact-lbl">Invités</div><div className="ctx-fact-val">{coupleData.guestCount}</div></div>}
         </div>
         {selected.size > 0 && (
-          <button className="btn gold small" onClick={handleContact}>
+          <button className="btn gold small" onClick={() => router.push(`/messages/nouveau?pros=${Array.from(selected).join(",")}`)}>
             Contacter {selected.size} sélectionné{selected.size > 1 ? "s" : ""}
           </button>
         )}
@@ -133,73 +157,52 @@ function SearchContent({ coupleData, categories }: Props) {
         <span style={{ fontSize:"0.66rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", marginRight:6 }}>Catégorie</span>
         <button className={`chip${category === "" ? " active" : ""}`} onClick={() => setCategory("")}>Tous</button>
         {categories.map(({ value, label }) => (
-          <button
-            key={value}
-            className={`chip${category === value ? " active" : ""}`}
-            onClick={() => setCategory(value === category ? "" : value)}
-          >
-            {label}
-          </button>
+          <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
         ))}
       </div>
 
-      {/* Filtres ambiance */}
       <div className="filters-row" style={{ marginTop:-8 }}>
         <span style={{ fontSize:"0.66rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", marginRight:6 }}>Ambiance</span>
         {Object.entries(AMBIANCES).map(([key, label]) => (
-          <button
-            key={key}
-            className={`chip${ambiance === key ? " active" : ""}`}
-            onClick={() => setAmbiance(ambiance === key ? "" : key)}
-          >
-            {label}
-          </button>
+          <button key={key} className={`chip${ambiance === key ? " active" : ""}`} onClick={() => setAmbiance(ambiance === key ? "" : key)}>{label}</button>
         ))}
       </div>
 
       <div className="tip">
-        🌿 <strong>Bon à savoir —</strong> Cochez 2 à 3 prestataires pour leur envoyer un message groupé et comparer les devis.
+        🌿 <strong>Bon à savoir —</strong> Ajoutez jusqu&apos;à 5 favoris par catégorie pour comparer. Cochez pour envoyer un message groupé.
       </div>
 
-      {/* Liste */}
       {loading ? (
         <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", padding:"40px 0" }}>Chargement…</p>
       ) : pros.length === 0 ? (
         <div style={{ padding:"60px 0", textAlign:"center" }}>
-          <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:16 }}>
-            Aucun prestataire trouvé pour ces critères.
-          </p>
-          <button className="btn ghost small" onClick={() => { setCategory(""); setAmbiance(""); }}>
-            Effacer les filtres
-          </button>
+          <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:16 }}>Aucun prestataire trouvé.</p>
+          <button className="btn ghost small" onClick={() => { setCategory(""); setAmbiance(""); }}>Effacer les filtres</button>
         </div>
       ) : (
         <div className="presta-list">
           {pros.map((pro) => {
-            const isSel    = selected.has(pro.id);
-            const avail    = getAvailLabel(pro);
-            const minTarif = pro.tarifs[0];
+            const rel    = getRelation(pro.id);
+            const isFav  = !!rel;
+            const isSel  = selected.has(pro.id);
+            const avail  = getAvailLabel(pro);
 
             return (
               <div
                 key={pro.id}
                 className={`presta-card${isSel ? " selected" : ""}`}
-                onClick={() => goToProfile(pro.slug)}
-                style={{ cursor:"pointer" }}
+                onClick={() => router.push(`/prestataires/${pro.slug}`)}
+                style={{ cursor:"pointer", position:"relative" }}
               >
-                {/* Checkbox — stopPropagation pour ne pas naviguer */}
-                <div
-                  className="checkbox-round"
-                  onClick={(e) => toggleSelect(e, pro.id)}
-                  title="Sélectionner"
-                  style={{ cursor:"pointer", flexShrink:0 }}
-                >
+                {/* Checkbox */}
+                <div className="checkbox-round" onClick={(e) => toggleSelect(e, pro.id)} title="Sélectionner" style={{ cursor:"pointer" }}>
                   {isSel ? "✓" : ""}
                 </div>
 
+                {/* Photo / initiales */}
                 {pro.profilePhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={pro.profilePhoto} alt={pro.name} className="presta-photo" style={{ objectFit:"cover", borderRadius:0 }} />
+                  <img src={pro.profilePhoto} alt={pro.name} className="presta-photo" style={{ objectFit:"cover" }} />
                 ) : (
                   <div className="presta-photo serif">{initials(pro.name)}</div>
                 )}
@@ -214,36 +217,43 @@ function SearchContent({ coupleData, categories }: Props) {
                 </div>
 
                 <div className="presta-avail">
-                  {avail === "ok"         && <div className="avail-dot avail-ok">Disponible</div>}
-                  {avail === "contact"    && <div className="avail-dot avail-contact">À contacter</div>}
-                  {avail === "unavailable" && (
-                    <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500, background:"rgba(176,96,74,0.12)", color:"var(--terracotta)", border:"1px solid rgba(176,96,74,0.3)", marginBottom:6 }}>
-                      <span style={{ width:6, height:6, borderRadius:"50%", background:"var(--terracotta)", display:"inline-block" }} />
-                      Indisponible
-                    </div>
-                  )}
-                  {minTarif && (
-                    <div className="presta-price">À partir de {minTarif.priceFrom.toLocaleString("fr-FR")} €</div>
-                  )}
-                  <div style={{ marginTop:8, fontSize:"0.62rem", letterSpacing:"0.1em", textTransform:"uppercase", color:"var(--gold)" }}>
-                    Voir la fiche →
-                  </div>
+                  {avail === "ok"          && <div className="avail-dot avail-ok">Disponible</div>}
+                  {avail === "contact"     && <div className="avail-dot avail-contact">À contacter</div>}
+                  {avail === "unavailable" && <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 10px", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", fontWeight:500, background:"rgba(176,96,74,0.12)", color:"var(--terracotta)", border:"1px solid rgba(176,96,74,0.3)", marginBottom:6 }}><span style={{ width:6, height:6, borderRadius:"50%", background:"var(--terracotta)", display:"inline-block" }} />Indisponible</div>}
+                  {pro.tarifs[0] && <div className="presta-price">À partir de {pro.tarifs[0].priceFrom.toLocaleString("fr-FR")} €</div>}
+                  <div style={{ marginTop:6, fontSize:"0.62rem", letterSpacing:"0.1em", textTransform:"uppercase", color:"var(--gold)" }}>Voir la fiche →</div>
                 </div>
+
+                {/* Cœur favori */}
+                <button
+                  className={`heart-btn${isFav ? " filled" : ""}`}
+                  onClick={(e) => toggleFavorite(pro, e)}
+                  disabled={actionLoading}
+                  title={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
+                  style={{ position:"absolute", top:12, right:12 }}
+                >
+                  {isFav ? "♥" : "♡"}
+                </button>
+
+                {/* Badge retenu */}
+                {rel?.status === "RETAINED" && (
+                  <div style={{ position:"absolute", top:12, right:42, fontSize:"0.52rem", letterSpacing:"0.14em", textTransform:"uppercase", background:"var(--gold)", color:"var(--paper)", padding:"2px 8px", fontWeight:600 }}>
+                    Retenu
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
       )}
 
-      {/* Barre flottante */}
-      {selected.size > 0 && (
-        <div className="floating-bar">
-          <div className="fb-count">
-            {selected.size} <em>prestataire{selected.size > 1 ? "s" : ""} sélectionné{selected.size > 1 ? "s" : ""}</em>
-          </div>
-          <button className="btn small gold" onClick={handleContact}>Les contacter</button>
-        </div>
-      )}
+      <FloatingActionBar
+        selectedIds={Array.from(selected)}
+        onSendMessage={() => router.push(`/messages/nouveau?pros=${Array.from(selected).join(",")}`)}
+        onAddFavorites={handleAddFavorites}
+        onClear={() => setSelected(new Set())}
+        loading={actionLoading}
+      />
     </div>
   );
 }
