@@ -112,3 +112,45 @@ export async function sendCredentialsEmail(opts: {
     `,
   });
 }
+
+export async function sendPaymentReceiptEmail(opts: {
+  to: string;
+  coupleName: string;
+  proName: string;
+  label: string;
+  amount: string;
+  reference: string;
+  dashboardUrl: string;
+}) {
+  return resend.emails.send({
+    from: FROM,
+    to:   opts.to,
+    subject: `Paiement confirmé — ${opts.label}`,
+    html: `
+      <div style="font-family:'Georgia',serif;max-width:600px;margin:0 auto;background:#FAF8F4;">
+        <div style="background:#1A1510;padding:24px 32px;">
+          <p style="margin:0;font-size:18px;color:#FAF8F4;">Le Carnet <em style="color:#A8833B;">des noces</em></p>
+        </div>
+        <div style="padding:32px;">
+          <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:#7A8B6E;">Paiement confirmé ✓</p>
+          <h2 style="margin:0 0 24px;font-size:22px;font-weight:300;color:#1A1510;">Merci, ${opts.coupleName}.</h2>
+          <div style="background:#F2ECE1;border:1px solid #D4C9B3;padding:20px 24px;margin-bottom:28px;">
+            <table style="width:100%;border-collapse:collapse;font-size:14px;">
+              <tr><td style="padding:8px 0;color:#7D7060;border-bottom:1px dashed #D4C9B3;">Prestataire</td><td style="text-align:right;font-family:'Georgia',serif;">${opts.proName}</td></tr>
+              <tr><td style="padding:8px 0;color:#7D7060;border-bottom:1px dashed #D4C9B3;">Prestation</td><td style="text-align:right;">${opts.label}</td></tr>
+              <tr><td style="padding:8px 0;color:#7D7060;border-bottom:1px dashed #D4C9B3;">Référence</td><td style="text-align:right;font-family:monospace;">#${opts.reference}</td></tr>
+              <tr><td style="padding:10px 0 0;font-weight:500;font-size:15px;">Montant réglé</td><td style="text-align:right;color:#A8833B;font-size:20px;font-family:'Georgia',serif;font-weight:500;">${opts.amount}</td></tr>
+            </table>
+          </div>
+          <p style="font-size:13px;color:#7D7060;font-style:italic;margin-bottom:24px;">${opts.proName} a été notifié et vous recontactera sous 48 h.</p>
+          <a href="${opts.dashboardUrl}" style="display:inline-block;background:#A8833B;color:#FAF8F4;padding:14px 28px;text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">
+            Voir mon carnet →
+          </a>
+        </div>
+        <div style="padding:16px 32px;border-top:1px solid #D4C9B3;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#8A7B63;">Le Carnet des noces · Perpignan &amp; Roussillon</p>
+        </div>
+      </div>
+    `,
+  });
+}
