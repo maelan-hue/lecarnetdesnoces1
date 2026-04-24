@@ -7,8 +7,9 @@ declare global {
 }
 
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-  return new PrismaClient({ adapter });
+  // max: 3 connexions — compatible avec la limite Supabase Free (15 total)
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL!, max: 3 });
+  return new PrismaClient({ adapter, log: [] });
 }
 
 export const db = globalThis.prisma ?? createPrismaClient();
