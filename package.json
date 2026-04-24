@@ -1,5 +1,5 @@
 {
-  "name": "carnet-tmp",
+  "name": "carnet-des-noces",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,14 +8,24 @@
     "start": "next start"
   },
   "dependencies": {
+    "@prisma/client": "^7.8.0",
+    "@stripe/stripe-js": "^9.3.1",
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.9.0",
+    "dotenv": "^17.4.2",
+    "jose": "^6.2.2",
     "next": "16.2.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "resend": "^6.12.2",
+    "stripe": "^22.1.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5"
+    "prisma": "^7.8.0",
+    "typescript": "^6.0.3"
   }
 }

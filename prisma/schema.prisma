@@ -1,0 +1,343 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── COUPLE ──────────────────────────────────────────────────────────────────
+
+model Couple {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  prenoms   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  weddingDate    DateTime?
+  weddingCity    String?
+  weddingVenue   String?
+  guestCount     Int?
+  budgetEstimate Int?
+  ambiances      String[]
+  planningStage  String?
+  onboardingDone Boolean @default(false)
+
+  tasks         CoupleTask[]
+  guests        Guest[]
+  conversations Conversation[]
+  payments      Payment[]
+
+  @@map("couples")
+}
+
+// ─── PRESTATAIRE ─────────────────────────────────────────────────────────────
+
+model Pro {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  phone     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  status      ProStatus @default(PENDING)
+  validatedAt DateTime?
+
+  slug        String  @unique
+  name        String
+  tagline     String?
+  bio         String? @db.Text
+  category    ProCategory
+  ambiances   String[]
+  styleKeywords String[]
+  city        String?
+  department  String?
+  radiusKm    Int     @default(80)
+
+  stripeAccountId String? @unique
+  stripeOnboarded Boolean @default(false)
+
+  portfolioPhotos String[]
+
+  tarifs        ProTarif[]
+  availability  ProAvailability[]
+  conversations Conversation[]
+  payments      Payment[]
+  paymentLinks  PaymentLink[]
+  stats         ProStats?
+  tasks         CoupleTask[]
+
+  @@map("pros")
+}
+
+enum ProStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProCategory {
+  PHOTOGRAPHE
+  VIDEASTE
+  TRAITEUR
+  LIEU
+  FLEURISTE
+  DJ_MUSICIEN
+  OFFICIANT
+  COIFFURE_MAQUILLAGE
+  DECORATION_PAPETERIE
+  WEDDING_PLANNER
+  AUTRE
+}
+
+model ProTarif {
+  id          String @id @default(cuid())
+  proId       String
+  pro         Pro    @relation(fields: [proId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  priceFrom   Int
+  position    Int    @default(0)
+
+  @@map("pro_tarifs")
+}
+
+model ProAvailability {
+  id     String             @id @default(cuid())
+  proId  String
+  pro    Pro                @relation(fields: [proId], references: [id], onDelete: Cascade)
+  date   DateTime           @db.Date
+  status AvailabilityStatus
+
+  @@unique([proId, date])
+  @@map("pro_availability")
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+}
+
+model ProStats {
+  id           String @id @default(cuid())
+  proId        String @unique
+  pro          Pro    @relation(fields: [proId], references: [id], onDelete: Cascade)
+  profileViews Int    @default(0)
+  messageCount Int    @default(0)
+
+  @@map("pro_stats")
+}
+
+// ─── TÂCHES DU CARNET ────────────────────────────────────────────────────────
+
+model CoupleTask {
+  id        String   @id @default(cuid())
+  coupleId  String
+  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  phase       Int
+  position    Int
+  category    String
+  title       String
+  description String?
+  timingLabel String?
+  tipContext   String?
+
+  status     TaskStatus @default(TODO)
+
+  proId      String?
+  pro        Pro?    @relation(fields: [proId], references: [id])
+  proName    String?
+  quoteTotal Int?
+
+  payments   Payment[]
+
+  @@map("couple_tasks")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}
+
+// ─── INVITÉS ─────────────────────────────────────────────────────────────────
+
+model Guest {
+  id        String   @id @default(cuid())
+  coupleId  String
+  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  firstName String
+  lastName  String
+  address   String?
+  diet      String?
+  presence  GuestPresence @default(PENDING)
+  notes     String?
+
+  @@map("guests")
+}
+
+enum GuestPresence {
+  PRESENT
+  ABSENT
+  PENDING
+}
+
+// ─── MESSAGERIE ──────────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  coupleId String
+  couple   Couple @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  proId    String
+  pro      Pro    @relation(fields: [proId], references: [id], onDelete: Cascade)
+
+  messages       Message[]
+  unreadByCouple Int @default(0)
+  unreadByPro    Int @default(0)
+
+  @@unique([coupleId, proId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  senderRole SenderRole
+  body       String     @db.Text
+  emailSent  Boolean    @default(false)
+
+  @@map("messages")
+}
+
+enum SenderRole {
+  COUPLE
+  PRO
+}
+
+// ─── PAIEMENTS ───────────────────────────────────────────────────────────────
+
+model PaymentLink {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  proId String
+  pro   Pro    @relation(fields: [proId], references: [id], onDelete: Cascade)
+
+  coupleEmail String
+  coupleName  String
+
+  label       String
+  type        PaymentLinkType
+  quoteTotal  Int
+  amount      Int
+  amountTotal Int
+  message     String? @db.Text
+
+  stripePaymentIntentId String? @unique
+  stripePaymentUrl      String?
+
+  status    PaymentLinkStatus @default(PENDING)
+  expiresAt DateTime
+  paidAt    DateTime?
+
+  payment Payment?
+
+  @@map("payment_links")
+}
+
+enum PaymentLinkType {
+  ACOMPTE
+  SOLDE
+  UNIQUE
+  ECHEANCE
+}
+
+enum PaymentLinkStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELLED
+}
+
+model Payment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  coupleId      String?
+  couple        Couple?     @relation(fields: [coupleId], references: [id])
+  proId         String?
+  pro           Pro?        @relation(fields: [proId], references: [id])
+  taskId        String?
+  task          CoupleTask? @relation(fields: [taskId], references: [id])
+  paymentLinkId String?     @unique
+  paymentLink   PaymentLink? @relation(fields: [paymentLinkId], references: [id])
+
+  amount     Int
+  amountNet  Int
+  commission Int
+  stripeFee  Int
+  currency   String @default("eur")
+
+  type    PaymentType
+  status  PaymentStatus @default(PENDING)
+  label   String?
+  notes   String?
+
+  stripePaymentIntentId String? @unique
+  receiptUrl            String?
+
+  @@map("payments")
+}
+
+enum PaymentType {
+  PLATFORM
+  MANUAL
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─── CONTENU ÉDITORIAL ───────────────────────────────────────────────────────
+
+model Tip {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  context  String
+  position Int     @default(0)
+  body     String  @db.Text
+  active   Boolean @default(true)
+
+  @@map("tips")
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────────────────
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  @@map("admins")
+}
