@@ -79,12 +79,11 @@ export default async function CagnottePage({ params }: Props) {
         {/* Histoire + stats */}
         <div style={{ padding:"0 40px 30px", display:"grid", gridTemplateColumns:"1fr 220px", gap:30, alignItems:"start" }}>
           <div>
-            {cagnotte.story && (
-              <>
-                <div className="eyebrow" style={{ marginBottom:10 }}>Notre histoire</div>
-                <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", lineHeight:1.7, whiteSpace:"pre-wrap" }}>{cagnotte.story}</p>
-              </>
-            )}
+            <div className="eyebrow" style={{ marginBottom:10 }}>Notre histoire</div>
+            {cagnotte.story
+              ? <p style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", lineHeight:1.7, whiteSpace:"pre-wrap" }}>{cagnotte.story}</p>
+              : isDraft && <p style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"var(--mute)", fontSize:"0.95rem" }}>Votre histoire apparaîtra ici — remplissez l&apos;étape II dans la configuration.</p>
+            }
           </div>
           <div style={{ background:"var(--ivory)", padding:"20px", border:"1px solid var(--bone)", textAlign:"center" }}>
             <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"2rem", color:"var(--gold)", lineHeight:1 }}>{(totalCollected/100).toLocaleString("fr-FR")} €</div>

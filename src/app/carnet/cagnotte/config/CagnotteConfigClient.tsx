@@ -237,7 +237,10 @@ export default function CagnotteConfigClient({ initial }: { initial: Initial }) 
       <div style={{ display:"flex", gap:10, flexWrap:"wrap", paddingTop:24, borderTop:"1px dashed var(--bone)" }}>
         <button className="btn gold" onClick={() => save(true)} disabled={saving}>{saving ? "…" : "Enregistrer & publier"}</button>
         <button className="btn ghost" onClick={() => save(false)} disabled={saving}>Enregistrer brouillon</button>
-        <Link href={`/cagnotte/${slug}`} target="_blank" className="btn ghost">Aperçu de ma page →</Link>
+        <button className="btn ghost" disabled={saving} onClick={async () => {
+          await save(false);
+          window.open(`/cagnotte/${slug}`, "_blank");
+        }}>Aperçu de ma page →</button>
         <button className="btn ghost" onClick={() => router.push("/carnet/cagnotte")}>Retour au suivi</button>
       </div>
     </div>
