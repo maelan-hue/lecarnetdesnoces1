@@ -365,7 +365,7 @@ model Cagnotte {
   // Réglages
   showGuestbook    Boolean @default(true)
   allowAnonymous   Boolean @default(true)
-  emailOnDonation  Boolean @default(false)
+  emailOnDonation  Boolean @default(true)
   emailWeeklyRecap Boolean @default(true)
 
   // Retrait

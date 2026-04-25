@@ -163,10 +163,49 @@ export async function sendDonationReceiptEmail(opts: { to: string; couplePrenoms
   });
 }
 
-export async function sendDonationNotifEmail(opts: { to: string; amountNet: number }) {
+export async function sendDonationNotifEmail(opts: {
+  to: string;
+  amountNet: number;
+  donorName?: string | null;
+  isAnonymous?: boolean;
+  message?: string | null;
+  dreamTitle?: string | null;
+}) {
+  const donor = opts.isAnonymous ? "Un·e invité·e anonyme" : (opts.donorName || "Un·e invité·e");
+  const amount = (opts.amountNet / 100).toLocaleString("fr-FR", { minimumFractionDigits: 2 });
+
   return resend.emails.send({
-    from: FROM, to: opts.to,
-    subject: `Nouveau don reçu — ${(opts.amountNet/100).toLocaleString("fr-FR")} €`,
-    html: `<p>Vous venez de recevoir un don de ${(opts.amountNet/100).toLocaleString("fr-FR")} € sur votre cagnotte.</p><p><a href="${APP_URL}/carnet/cagnotte" style="color:#A8833B;">Voir ma cagnotte</a></p>`,
+    from: FROM,
+    to:   opts.to,
+    subject: `✦ Nouveau don reçu — ${amount} €`,
+    html: `
+      <div style="font-family:'Georgia',serif;max-width:560px;margin:0 auto;background:#FAF8F4;">
+        <div style="background:#1A1510;padding:20px 28px;">
+          <p style="margin:0;font-size:16px;color:#FAF8F4;">Le Carnet <em style="color:#A8833B;">des noces</em></p>
+        </div>
+        <div style="padding:28px;">
+          <p style="margin:0 0 6px;font-size:12px;letter-spacing:0.18em;text-transform:uppercase;color:#A8833B;">Nouveau don</p>
+          <h2 style="margin:0 0 20px;font-size:1.8rem;font-weight:300;color:#1A1510;">
+            ${donor} a participé à votre cagnotte.
+          </h2>
+          <div style="background:#F2ECE1;border-left:3px solid #A8833B;padding:16px 20px;margin-bottom:20px;">
+            <table style="width:100%;font-family:'Georgia',serif;font-size:14px;">
+              <tr>
+                <td style="color:#7D7060;padding:5px 0;">Montant</td>
+                <td style="text-align:right;font-size:1.4rem;color:#A8833B;font-style:italic;">${amount} €</td>
+              </tr>
+              ${opts.dreamTitle ? `<tr><td style="color:#7D7060;padding:5px 0;">Pour</td><td style="text-align:right;">${opts.dreamTitle}</td></tr>` : ""}
+              ${opts.message ? `<tr><td colspan="2" style="padding:10px 0 0;border-top:1px dashed #D4C9B3;margin-top:8px;font-style:italic;color:#1A1510;">"${opts.message}"</td></tr>` : ""}
+            </table>
+          </div>
+          <a href="${APP_URL}/carnet/cagnotte" style="display:inline-block;background:#A8833B;color:#FAF8F4;padding:12px 24px;text-decoration:none;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;">
+            Voir ma cagnotte →
+          </a>
+        </div>
+        <div style="padding:14px 28px;border-top:1px solid #D4C9B3;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#8A7B63;">Le Carnet des noces · Perpignan &amp; Roussillon</p>
+        </div>
+      </div>
+    `,
   });
 }

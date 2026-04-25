@@ -26,7 +26,10 @@ export async function POST(req: NextRequest) {
     if (donationId) {
       const donation = await db.cagnotteDonation.findUnique({
         where:   { id: donationId },
-        include: { cagnotte: { include: { couple: { select: { email: true, prenoms: true } } } } },
+        include: {
+          dream:   { select: { title: true } },
+          cagnotte: { include: { couple: { select: { email: true, prenoms: true } } } },
+        },
       });
       if (donation && donation.status === "PENDING") {
         await db.cagnotteDonation.update({
@@ -37,7 +40,16 @@ export async function POST(req: NextRequest) {
         const { sendDonationReceiptEmail, sendDonationNotifEmail } = await import("@/lib/email");
         try { await sendDonationReceiptEmail({ to: donation.donorEmail, couplePrenoms: donation.cagnotte.couple.prenoms, amountNet: donation.amountNet }); } catch {}
         if (donation.cagnotte.emailOnDonation) {
-          try { await sendDonationNotifEmail({ to: donation.cagnotte.couple.email, amountNet: donation.amountNet }); } catch {}
+          try {
+            await sendDonationNotifEmail({
+              to:         donation.cagnotte.couple.email,
+              amountNet:  donation.amountNet,
+              donorName:  donation.donorName,
+              isAnonymous:donation.isAnonymous,
+              message:    donation.message,
+              dreamTitle: donation.dream?.title ?? null,
+            });
+          } catch {}
         }
       }
       return NextResponse.json({ ok: true });

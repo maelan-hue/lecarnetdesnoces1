@@ -54,3 +54,7 @@ async function main() {
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
+
+// Activer emailOnDonation sur toutes les cagnottes existantes
+const cagnottes = await db.cagnotte.updateMany({ data: { emailOnDonation: true } });
+console.log(`emailOnDonation activé sur ${cagnottes.count} cagnotte(s)`);
