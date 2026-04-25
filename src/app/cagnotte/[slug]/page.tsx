@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
+import { getSession } from "@/lib/auth";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -12,7 +13,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function CagnottePage({ params }: Props) {
-  const { slug } = await params;
+  const { slug }  = await params;
+  const session   = await getSession();
 
   const cagnotte = await db.cagnotte.findUnique({
     where:   { slug },
@@ -23,7 +25,13 @@ export default async function CagnottePage({ params }: Props) {
     },
   });
 
-  if (!cagnotte || cagnotte.status !== "ACTIVE") notFound();
+  if (!cagnotte) notFound();
+
+  // Brouillon : accessible uniquement au couple propriétaire
+  const isOwner = session?.role === "couple" && cagnotte.coupleId === session.sub;
+  if (cagnotte.status !== "ACTIVE" && !isOwner) notFound();
+
+  const isDraft = cagnotte.status === "DRAFT";
 
   const totalCollected    = cagnotte.donations.reduce((s, d) => s + d.amountNet, 0);
   const totalParticipants = cagnotte.donations.length;
@@ -32,6 +40,18 @@ export default async function CagnottePage({ params }: Props) {
 
   return (
     <div style={{ background:"var(--ivory)", minHeight:"100vh" }}>
+      {/* Bannière brouillon */}
+      {isDraft && (
+        <div style={{ background:"var(--ink)", color:"var(--paper)", padding:"10px 24px", display:"flex", justifyContent:"space-between", alignItems:"center", gap:16, flexWrap:"wrap" }}>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.9rem", color:"rgba(250,248,244,0.8)" }}>
+            ◎ Aperçu brouillon — cette page n&apos;est pas encore visible par vos invités.
+          </span>
+          <Link href="/carnet/cagnotte/config" style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.62rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--gold)", textDecoration:"none" }}>
+            Modifier →
+          </Link>
+        </div>
+      )}
+
       {/* Nav */}
       <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <Link href="/" className="landing-logo" style={{ fontSize:"1rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>
