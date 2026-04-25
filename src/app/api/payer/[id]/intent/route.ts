@@ -31,12 +31,13 @@ export async function POST(_req: NextRequest, { params }: P) {
   }
 
   const intent = await stripe.paymentIntents.create({
-    amount:   link.amountTotal,
-    currency: "eur",
-    application_fee_amount: link.amountTotal - link.amount, // commission 3%
-    transfer_data: { destination: link.pro.stripeAccountId },
-    metadata: { paymentLinkId: id, coupleName: link.coupleName, proName: link.pro.name },
-    description: link.label,
+    amount:               link.amountTotal,
+    currency:             "eur",
+    payment_method_types: ["card"],
+    application_fee_amount: link.amountTotal - link.amount,
+    transfer_data:        { destination: link.pro.stripeAccountId },
+    metadata:             { paymentLinkId: id, coupleName: link.coupleName, proName: link.pro.name },
+    description:          link.label,
   });
 
   await db.paymentLink.update({

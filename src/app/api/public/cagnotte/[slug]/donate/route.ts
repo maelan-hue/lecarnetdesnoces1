@@ -50,11 +50,12 @@ export async function POST(req: NextRequest, { params }: P) {
 
   // Créer le Payment Intent Stripe
   const intent = await stripe.paymentIntents.create({
-    amount:      amountTotalPaid,
-    currency:    "eur",
-    description: `Don cagnotte ${cagnotte.title}`,
-    receipt_email: wantsReceipt ? donorEmail : undefined,
-    metadata:    { donationId: donation.id, cagnotteId: cagnotte.id, amountNet: String(amountNet) },
+    amount:               amountTotalPaid,
+    currency:             "eur",
+    payment_method_types: ["card"],
+    description:          `Don cagnotte ${cagnotte.title}`,
+    receipt_email:        wantsReceipt ? donorEmail : undefined,
+    metadata:             { donationId: donation.id, cagnotteId: cagnotte.id, amountNet: String(amountNet) },
   });
 
   await db.cagnotteDonation.update({
