@@ -44,10 +44,18 @@ export default async function LandingPage() {
           <Link href="/" className="landing-logo" style={{ textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>
           <div className="landing-nav-links">
             <a href="#comment-ca-marche">Comment ça marche</a>
-            {!isLogged && <><Link href="/connexion">Espace couple</Link><Link href="/connexion-pro">Espace prestataire</Link></>}
-            {isCouple  && <><Link href="/carnet">Mon carnet</Link><Link href="/prestataires">Prestataires</Link><Link href="/carnet/cagnotte">Cagnotte</Link></>}
-            {isPro     && <><Link href="/dashboard">Dashboard</Link><Link href="/dashboard/paiements">Paiements</Link></>}
-            {!isLogged && <Link href="/onboarding" className="gold">Commencer</Link>}
+            {!isLogged && (
+              <>
+                <Link href="/connexion">Espace couple</Link>
+                <Link href="/connexion-pro">Espace prestataire</Link>
+                <Link href="/onboarding" className="gold">Commencer</Link>
+              </>
+            )}
+            {isLogged && (
+              <Link href={dashboardUrl} className="gold">
+                Accéder à mon espace →
+              </Link>
+            )}
           </div>
           {isLogged && <LandingUserMenu name={userName} role={userRole!} dashboardUrl={dashboardUrl} />}
         </nav>
