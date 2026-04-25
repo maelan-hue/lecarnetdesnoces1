@@ -27,7 +27,6 @@ export default function LandingPage() {
           </p>
           <div className="hero-ctas">
             <Link href="/onboarding" className="btn large gold">Commencer mon carnet</Link>
-            <span className="hero-meta">· gratuit · 2 minutes</span>
           </div>
         </div>
 
