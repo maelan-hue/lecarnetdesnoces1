@@ -16,11 +16,9 @@ export async function POST(req: NextRequest) {
   const count = await db.cagnotteDream.count({ where: { cagnotteId: cagnotte.id } });
   if (count >= 5) return NextResponse.json({ error: "Maximum 5 rêves." }, { status: 400 });
 
-  const { title, description } = await req.json();
-  if (!title?.trim()) return NextResponse.json({ error: "Titre requis." }, { status: 400 });
-
+  const body  = await req.json().catch(() => ({}));
   const dream = await db.cagnotteDream.create({
-    data: { cagnotteId: cagnotte.id, title: title.trim(), description: description?.trim() || null, sortOrder: count },
+    data: { cagnotteId: cagnotte.id, title: body.title?.trim() || "Nouveau rêve", description: body.description?.trim() || null, sortOrder: count },
   });
   return NextResponse.json(dream, { status: 201 });
 }

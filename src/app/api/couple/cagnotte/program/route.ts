@@ -10,11 +10,15 @@ export async function POST(req: NextRequest) {
   if (!cagnotte) return NextResponse.json({ error: "Cagnotte introuvable" }, { status: 404 });
 
   const count = await db.cagnotteProgram.count({ where: { cagnotteId: cagnotte.id } });
-  const { timeLabel, description } = await req.json();
-  if (!timeLabel?.trim() || !description?.trim()) return NextResponse.json({ error: "Heure et description requises." }, { status: 400 });
+  const body  = await req.json().catch(() => ({}));
 
   const row = await db.cagnotteProgram.create({
-    data: { cagnotteId: cagnotte.id, timeLabel: timeLabel.trim(), description: description.trim(), sortOrder: count },
+    data: {
+      cagnotteId:  cagnotte.id,
+      timeLabel:   body.timeLabel?.trim()   ?? "",
+      description: body.description?.trim() ?? "",
+      sortOrder:   count,
+    },
   });
   return NextResponse.json(row, { status: 201 });
 }
