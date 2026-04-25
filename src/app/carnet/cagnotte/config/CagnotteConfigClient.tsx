@@ -53,9 +53,8 @@ export default function CagnotteConfigClient({ initial }: { initial: Initial }) 
     const file = e.target.files?.[0]; if (!file) return;
     if (file.size > 2*1024*1024) { setMsg("Photo trop lourde (2 Mo max)."); return; }
     setUploading(true);
-    // Upload direct Cloudinary via notre API portfolio (hack propre)
     const fd = new FormData(); fd.append("file", file);
-    const res = await fetch("/api/pro/portfolio", { method:"POST", body:fd });
+    const res = await fetch("/api/couple/cagnotte/photo", { method:"POST", body:fd });
     const json = await res.json();
     setUploading(false);
     if (res.ok) { setPhotoUrl(json.url); setMsg("Photo mise à jour."); }
