@@ -31,6 +31,7 @@ model Couple {
   conversations   Conversation[]
   payments        Payment[]
   vendorRelations VendorRelation[]
+  cagnotte        Cagnotte?
 
   @@map("couples")
 }
@@ -342,6 +343,127 @@ model VendorRelation {
 enum VendorRelationStatus {
   FAVORITE
   RETAINED
+}
+
+// ─── CAGNOTTE ────────────────────────────────────────────────────────────────
+
+model Cagnotte {
+  id        String        @id @default(cuid())
+  coupleId  String        @unique
+  couple    Couple        @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  slug      String        @unique
+  title     String        @default("")
+  subtitle  String?
+  story     String?       @db.Text
+  photoUrl  String?
+
+  status    CagnotteStatus @default(DRAFT)
+
+  // Réglages
+  showGuestbook    Boolean @default(true)
+  allowAnonymous   Boolean @default(true)
+  emailOnDonation  Boolean @default(false)
+  emailWeeklyRecap Boolean @default(true)
+
+  // Retrait
+  ibanStored      String?
+  withdrawnAt     DateTime?
+
+  dreams      CagnotteDream[]
+  program     CagnotteProgram[]
+  donations   CagnotteDonation[]
+  withdrawals CagnotteWithdrawal[]
+
+  @@map("cagnottes")
+}
+
+enum CagnotteStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model CagnotteDream {
+  id          String    @id @default(cuid())
+  cagnotteId  String
+  cagnotte    Cagnotte  @relation(fields: [cagnotteId], references: [id], onDelete: Cascade)
+  title       String
+  description String?   @db.Text
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  donations   CagnotteDonation[]
+
+  @@map("cagnotte_dreams")
+}
+
+model CagnotteProgram {
+  id          String    @id @default(cuid())
+  cagnotteId  String
+  cagnotte    Cagnotte  @relation(fields: [cagnotteId], references: [id], onDelete: Cascade)
+  timeLabel   String
+  description String
+  sortOrder   Int       @default(0)
+
+  @@map("cagnotte_program")
+}
+
+model CagnotteDonation {
+  id          String         @id @default(cuid())
+  cagnotteId  String
+  cagnotte    Cagnotte       @relation(fields: [cagnotteId], references: [id], onDelete: Cascade)
+  dreamId     String?
+  dream       CagnotteDream? @relation(fields: [dreamId], references: [id], onDelete: SetNull)
+  createdAt   DateTime       @default(now())
+
+  donorName   String?
+  donorEmail  String
+  isAnonymous Boolean  @default(false)
+  message     String?  @db.Text
+
+  amountNet        Int  // centimes — montant pour le couple
+  amountStripeFees Int  // centimes — frais Stripe facturés à l'invité
+  amountTotalPaid  Int  // centimes — total payé par l'invité
+
+  stripePaymentIntentId String?  @unique
+  status    DonationStatus @default(PENDING)
+  paidAt    DateTime?
+
+  @@map("cagnotte_donations")
+}
+
+enum DonationStatus {
+  PENDING
+  PAID
+  REFUNDED
+}
+
+model CagnotteWithdrawal {
+  id          String    @id @default(cuid())
+  cagnotteId  String
+  cagnotte    Cagnotte  @relation(fields: [cagnotteId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  amountGross       Int  // brut cagnotte en centimes
+  platformCommission Int  // 3%
+  stripePayout      Int  // 25 centimes
+  amountNet         Int  // net reçu
+
+  ibanSnapshot String?   // IBAN au moment du retrait
+  status       WithdrawalStatus @default(REQUESTED)
+  completedAt  DateTime?
+
+  @@map("cagnotte_withdrawals")
+}
+
+enum WithdrawalStatus {
+  REQUESTED
+  PROCESSING
+  COMPLETED
+  FAILED
 }
 
 // ─── CONTENU ÉDITORIAL ───────────────────────────────────────────────────────

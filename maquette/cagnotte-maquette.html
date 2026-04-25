@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cagnotte · Le Carnet des noces</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF8F4;
+    --ivory: #F2ECE1;
+    --bone: #D4C9B3;
+    --taupe: #8A7B63;
+    --ink: #1A1510;
+    --gold: #A8833B;
+    --terracotta: #B0604A;
+    --sage: #7A8B6E;
+    --mute: #6B6356;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--ivory); color: var(--ink); font-family: 'Jost', sans-serif; font-weight: 300; }
+
+  /* Navigation entre écrans */
+  .nav-bar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink); color: var(--paper);
+    padding: 14px 24px;
+    display: flex; gap: 4px; overflow-x: auto;
+    border-bottom: 1px solid var(--gold);
+  }
+  .nav-tab {
+    background: transparent; color: var(--paper);
+    border: 1px solid transparent;
+    padding: 8px 18px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; white-space: nowrap;
+    transition: all 0.2s;
+  }
+  .nav-tab:hover { border-color: var(--gold); }
+  .nav-tab.active { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+  .nav-label { font-size: 0.62rem; color: var(--taupe); letter-spacing: 0.22em; padding: 0 10px; align-self: center; }
+
+  .screen { display: none; padding: 30px; max-width: 900px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  /* ========== Typographie éditoriale ========== */
+  .eyebrow { font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); font-weight: 500; }
+  .h1-ed { font-family: 'Cormorant Garamond', serif; font-size: 2.6rem; font-weight: 400; line-height: 1.15; margin: 12px 0 8px; color: var(--ink); }
+  .h1-ed em { font-style: italic; color: var(--gold); }
+  .h2-ed { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 500; margin-bottom: 6px; color: var(--ink); }
+  .h2-ed em { font-style: italic; color: var(--gold); }
+  .body-ed { font-family: 'Cormorant Garamond', serif; font-size: 1rem; line-height: 1.7; color: var(--ink); }
+  .muted { color: var(--mute); font-style: italic; }
+  .ornament { text-align: center; letter-spacing: 20px; color: var(--gold); opacity: 0.6; margin: 16px 0; font-size: 0.9rem; }
+
+  /* ========== Boutons ========== */
+  .btn-gold { background: var(--gold); color: var(--paper); border: none; padding: 14px 28px; font-family: 'Jost', sans-serif; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
+  .btn-gold:hover { opacity: 0.85; }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--taupe); padding: 10px 20px; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; }
+  .btn-ghost:hover { background: var(--ivory); }
+
+  /* ========== Inputs ========== */
+  .field-label { font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--taupe); font-weight: 500; margin-bottom: 8px; display: block; }
+  .input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--bone); padding: 10px 0; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--ink); outline: none; }
+  .input:focus { border-bottom-color: var(--gold); }
+  .textarea { width: 100%; border: 1px solid var(--bone); padding: 12px 14px; font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; line-height: 1.5; resize: vertical; background: var(--paper); }
+  .textarea:focus { border-color: var(--gold); outline: none; }
+
+  /* ========== ÉCRAN PAGE PUBLIQUE ========== */
+  .public-container { background: var(--paper); border-radius: 4px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+
+  .public-hero { padding: 50px 40px 28px; text-align: center; }
+  .public-body { padding: 0 40px 30px; display: grid; grid-template-columns: 280px 1fr; gap: 30px; align-items: start; }
+  .public-photo {
+    aspect-ratio: 4/5;
+    background: linear-gradient(135deg, var(--bone), var(--taupe));
+    display: flex; align-items: flex-end; padding: 20px; color: var(--paper);
+  }
+  .public-goals-wrap { padding: 36px 40px 28px; background: var(--ivory); text-align: center; }
+  .goals-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-top: 20px; }
+  .goal-card { background: var(--paper); border: 1px solid var(--bone); padding: 22px; text-align: left; }
+  .goal-num { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.6rem; color: var(--gold); line-height: 1; margin-bottom: 8px; }
+  .public-cta-band { padding: 32px 40px 40px; text-align: center; background: var(--ivory); }
+  .public-program { padding: 40px; text-align: center; }
+  .program-row { display: grid; grid-template-columns: 80px 1fr; gap: 18px; padding: 14px 0; border-bottom: 0.5px dashed var(--bone); text-align: left; }
+  .program-row:last-child { border-bottom: none; }
+  .program-time { font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.15em; color: var(--gold); font-weight: 500; padding-top: 4px; }
+  .program-title { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 500; margin-bottom: 2px; }
+  .public-guestbook { padding: 36px 40px; background: var(--ivory); }
+  .msg-card { background: var(--paper); padding: 14px 18px; border-left: 2px solid var(--gold); margin-bottom: 10px; }
+  .msg-text { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--ink); line-height: 1.55; }
+  .msg-sig { font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--taupe); margin-top: 6px; font-weight: 500; }
+  .public-footer { padding: 22px 40px; text-align: center; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--taupe); font-size: 0.82rem; border-top: 0.5px solid var(--bone); }
+
+  /* ========== ÉCRAN FORMULAIRE DON ========== */
+  .don-container { background: var(--paper); padding: 44px 38px; border-radius: 4px; max-width: 580px; margin: 0 auto; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+  .don-hero { text-align: center; margin-bottom: 36px; }
+  .preset-row { display: flex; gap: 8px; margin-bottom: 14px; }
+  .preset { flex: 1; background: transparent; border: 1px solid var(--bone); padding: 14px 0; text-align: center; cursor: pointer; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); transition: all 0.2s; }
+  .preset:hover { border-color: var(--taupe); }
+  .preset.active { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; background: transparent; border: 1px solid var(--bone);
+    cursor: pointer; font-family: 'Cormorant Garamond', serif; font-size: 0.85rem;
+    color: var(--ink); transition: all 0.2s;
+  }
+  .chip:hover { border-color: var(--taupe); }
+  .chip.active { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+  .chip.active::before { content: "✓"; font-size: 0.72rem; }
+
+  .toggle-row { display: flex; align-items: center; gap: 10px; padding: 8px 0; cursor: pointer; }
+  .check-box { width: 16px; height: 16px; border: 1px solid var(--taupe); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: transparent; }
+  .check-box.checked { background: var(--gold); border-color: var(--gold); color: var(--paper); }
+
+  .breakdown-box { background: var(--ivory); padding: 16px 20px; border-left: 2px solid var(--gold); margin: 24px 0; font-family: 'Cormorant Garamond', serif; }
+  .breakdown-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.9rem; color: var(--mute); }
+  .breakdown-total { display: flex; justify-content: space-between; padding: 10px 0 0; margin-top: 6px; border-top: 0.5px dashed var(--bone); font-size: 1.1rem; font-weight: 500; color: var(--ink); }
+  .breakdown-total em { font-style: italic; color: var(--gold); font-weight: 400; }
+  .breakdown-note { font-style: italic; color: var(--mute); font-size: 0.78rem; margin-top: 8px; line-height: 1.5; }
+
+  /* ========== ÉCRAN ADMIN COUPLE ========== */
+  .admin-container { max-width: 880px; margin: 0 auto; }
+  .admin-head { margin-bottom: 28px; }
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+  .stat-card-ad { background: var(--paper); border: 1px solid var(--bone); padding: 22px 20px; border-radius: 4px; }
+  .stat-ey { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); font-weight: 500; }
+  .stat-n { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 2.2rem; line-height: 1; color: var(--gold); margin: 6px 0 4px; }
+  .stat-n.ink { color: var(--ink); font-style: normal; }
+  .stat-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem; color: var(--mute); }
+
+  .link-box-wrap { background: var(--paper); padding: 22px 26px; border: 1px solid var(--bone); margin-bottom: 24px; }
+  .link-box { display: flex; gap: 10px; align-items: center; padding: 12px 14px; background: var(--ivory); border: 1px solid var(--bone); margin-top: 10px; }
+  .link-url { flex: 1; font-family: 'SF Mono', Monaco, monospace; font-size: 0.78rem; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .link-url em { font-style: italic; color: var(--gold); font-family: 'Cormorant Garamond', serif; font-size: 0.85rem; }
+  .share-buttons { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .goals-admin-section { margin-bottom: 28px; }
+  .section-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; flex-wrap: wrap; gap: 10px; }
+
+  .goal-row-ad { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 14px; padding: 14px 18px; background: var(--paper); border: 1px solid var(--bone); align-items: center; margin-bottom: 8px; }
+  .goal-row-num { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.4rem; color: var(--gold); line-height: 1; text-align: center; }
+  .goal-row-title { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 500; }
+  .goal-row-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.78rem; color: var(--mute); }
+  .goal-row-count { font-family: 'Jost', sans-serif; font-size: 0.82rem; color: var(--taupe); }
+
+  .participant-row { display: grid; grid-template-columns: 1fr auto 110px; gap: 16px; padding: 14px 0; border-bottom: 0.5px dashed var(--bone); align-items: center; }
+  .participant-name { font-family: 'Cormorant Garamond', serif; font-size: 1rem; }
+  .participant-meta { font-family: 'Jost', sans-serif; font-size: 0.7rem; color: var(--taupe); }
+  .participant-msg { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.82rem; max-width: 200px; text-align: right; }
+  .participant-amount { text-align: right; color: var(--gold); font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.25rem; }
+
+  .withdraw-panel {
+    background: linear-gradient(135deg, rgba(168,131,59,0.06), var(--ivory));
+    border: 1px solid var(--gold); border-left: 3px solid var(--gold);
+    padding: 26px 30px; margin-top: 28px;
+  }
+  .withdraw-calc { background: var(--paper); padding: 16px 20px; border: 1px solid var(--bone); margin: 14px 0; }
+  .wc-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.92rem; color: var(--mute); font-family: 'Cormorant Garamond', serif; }
+  .wc-row.total { border-top: 0.5px dashed var(--bone); padding-top: 10px; margin-top: 6px; font-size: 1.15rem; color: var(--ink); font-weight: 500; }
+  .wc-row.total em { font-style: italic; color: var(--gold); font-weight: 400; }
+  .iban-info {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    background: var(--paper); padding: 14px 18px; border: 1px solid var(--bone); margin-bottom: 14px;
+  }
+  .withdraw-cta-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  /* ========== ÉCRAN CONFIG (NOUVEAU) ========== */
+  .config-intro { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 1px dashed var(--bone); }
+
+  .config-section {
+    background: var(--paper);
+    border: 1px solid var(--bone);
+    padding: 30px 34px;
+    margin-bottom: 24px;
+  }
+  .config-section-head { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .config-section-num { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.8rem; color: var(--gold); line-height: 1; }
+
+  .photo-zone {
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, var(--bone), var(--taupe));
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paper);
+    border: 1px dashed var(--paper);
+    border-radius: 4px;
+    position: relative;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .photo-zone:hover { opacity: 0.9; }
+  .photo-upload-text {
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+  }
+  .photo-upload-text .icon {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--gold);
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 14px; }
+  @media (max-width: 640px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+  .form-field { margin-bottom: 18px; }
+
+  /* Éditeur d'un objectif/rêve */
+  .dream-editor {
+    background: var(--ivory);
+    border-left: 2px solid var(--gold);
+    padding: 20px 22px;
+    margin-bottom: 12px;
+  }
+  .dream-editor-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .dream-editor-num { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.3rem; color: var(--gold); }
+  .dream-remove-btn { background: none; border: none; color: var(--mute); cursor: pointer; font-size: 0.85rem; font-family: 'Jost', sans-serif; letter-spacing: 0.1em; }
+  .dream-remove-btn:hover { color: var(--terracotta); }
+
+  /* Éditeur de programme */
+  .program-editor-row {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--ivory);
+    border-left: 2px solid var(--gold);
+    margin-bottom: 10px;
+    align-items: center;
+  }
+  .program-editor-row input { border-bottom-color: transparent; background: var(--paper); padding: 8px 10px; font-size: 0.95rem; }
+
+  .add-more-btn {
+    width: 100%;
+    border: 1px dashed var(--bone);
+    background: transparent;
+    padding: 14px;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--taupe);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-more-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+  .config-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 24px 0;
+    margin-top: 20px;
+    border-top: 1px dashed var(--bone);
+  }
+
+  .tip-box {
+    background: var(--ivory);
+    border-left: 2px solid var(--gold);
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .tip-box strong { color: var(--gold); font-style: normal; font-weight: 500; }
+
+  .preview-band {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 18px 24px;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .preview-band .btn-ghost { border-color: var(--paper); color: var(--paper); }
+
+  @media (max-width: 780px) {
+    .public-body { grid-template-columns: 1fr; }
+    .goals-grid { grid-template-columns: 1fr; }
+    .stat-grid { grid-template-columns: 1fr; }
+    .iban-info { grid-template-columns: 1fr; }
+    .participant-row { grid-template-columns: 1fr; gap: 6px; }
+    .participant-msg { text-align: left; max-width: none; }
+    .participant-amount { text-align: left; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<div class="nav-bar">
+  <span class="nav-label">Cagnotte</span>
+  <button class="nav-tab active" data-s="config">1 · Configuration (couple)</button>
+  <button class="nav-tab" data-s="admin">2 · Suivi (couple)</button>
+  <button class="nav-tab" data-s="public">3 · Page publique</button>
+  <button class="nav-tab" data-s="don">4 · Formulaire don</button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     ÉCRAN 1 · CONFIGURATION (composer la page par le couple)
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="s-config">
+  <div class="admin-container">
+
+    <div class="config-intro">
+      <div class="eyebrow">Mon carnet · Cagnotte · Composer notre page</div>
+      <h1 class="h1-ed">Composez votre <em>page de cagnotte</em></h1>
+      <p class="body-ed muted">Racontez votre histoire, partagez vos rêves, et laissez vos proches participer à votre bonheur. Tout est modifiable à tout moment.</p>
+    </div>
+
+    <!-- Section I · La photo -->
+    <section class="config-section">
+      <div class="config-section-head">
+        <div>
+          <div class="eyebrow">Étape I</div>
+          <h2 class="h2-ed"><em>Votre photo</em> de couple</h2>
+          <p class="muted body-ed" style="font-size: 0.9rem; margin-top: 4px;">Choisissez une photo horizontale, lumineuse. C'est la première chose que vos proches verront.</p>
+        </div>
+        <div class="config-section-num">I</div>
+      </div>
+
+      <div class="photo-zone">
+        <div class="photo-upload-text">
+          <span class="icon">⬆</span>
+          Glissez une photo ici<br>
+          <span style="font-size: 0.82rem; opacity: 0.85;">ou cliquez pour la sélectionner · JPG, PNG · 2 Mo max</span>
+        </div>
+      </div>
+
+      <div class="tip-box" style="margin-top: 18px;">
+        🌿 <strong>Bon à savoir —</strong> Privilégiez une photo prise en lumière naturelle, avec vous deux au centre. Les photos de séance d'engagement fonctionnent particulièrement bien.
+      </div>
+    </section>
+
+    <!-- Section II · Le titre et l'histoire -->
+    <section class="config-section">
+      <div class="config-section-head">
+        <div>
+          <div class="eyebrow">Étape II</div>
+          <h2 class="h2-ed"><em>Votre histoire</em> en quelques lignes</h2>
+          <p class="muted body-ed" style="font-size: 0.9rem; margin-top: 4px;">Un titre, un sous-titre, quelques phrases. C'est l'accroche éditoriale de votre page.</p>
+        </div>
+        <div class="config-section-num">II</div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Titre principal de votre page</label>
+        <input type="text" class="input" value="Notre voyage à deux commence ici.">
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Sous-titre court (une phrase)</label>
+        <input type="text" class="input" value="Vous avez choisi de participer à notre bonheur — merci du fond du cœur.">
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Votre histoire — comment vous vous êtes rencontrés, votre ambiance</label>
+        <textarea class="textarea" rows="5">Nous nous sommes rencontrés à Perpignan, un après-midi de septembre, dans une librairie qui sentait le vieux papier. Sept ans plus tard, nous nous disons oui au Domaine de la Tuilerie, le 12 juin 2027, entourés de celles et ceux qui comptent.
+
+Votre présence est déjà le plus beau des cadeaux. Si vous souhaitez aller plus loin, nous avons rassemblé ici quelques rêves que vous pouvez soutenir — à votre rythme, à votre échelle.</textarea>
+      </div>
+    </section>
+
+    <!-- Section III · Les rêves -->
+    <section class="config-section">
+      <div class="config-section-head">
+        <div>
+          <div class="eyebrow">Étape III</div>
+          <h2 class="h2-ed">Vos <em>rêves</em> à financer</h2>
+          <p class="muted body-ed" style="font-size: 0.9rem; margin-top: 4px;">Listez 1 à 5 rêves. Vos proches choisiront lequel soutenir, ou donneront sans préciser.</p>
+        </div>
+        <div class="config-section-num">III</div>
+      </div>
+
+      <!-- Rêve 1 -->
+      <div class="dream-editor">
+        <div class="dream-editor-head">
+          <span class="dream-editor-num">I</span>
+          <button class="dream-remove-btn">Supprimer</button>
+        </div>
+        <div class="form-field">
+          <label class="field-label">Nom du rêve</label>
+          <input type="text" class="input" value="Voyage de noces">
+        </div>
+        <div class="form-field">
+          <label class="field-label">Description courte</label>
+          <textarea class="textarea" rows="2">Dix jours au Japon, au printemps prochain — Kyoto, Naoshima et la mer intérieure.</textarea>
+        </div>
+      </div>
+
+      <!-- Rêve 2 -->
+      <div class="dream-editor">
+        <div class="dream-editor-head">
+          <span class="dream-editor-num">II</span>
+          <button class="dream-remove-btn">Supprimer</button>
+        </div>
+        <div class="form-field">
+          <label class="field-label">Nom du rêve</label>
+          <input type="text" class="input" value="Notre maison">
+        </div>
+        <div class="form-field">
+          <label class="field-label">Description courte</label>
+          <textarea class="textarea" rows="2">Rénover la cuisine du petit mas que nous venons d'acheter à Ille-sur-Têt.</textarea>
+        </div>
+      </div>
+
+      <!-- Rêve 3 -->
+      <div class="dream-editor">
+        <div class="dream-editor-head">
+          <span class="dream-editor-num">III</span>
+          <button class="dream-remove-btn">Supprimer</button>
+        </div>
+        <div class="form-field">
+          <label class="field-label">Nom du rêve</label>
+          <input type="text" class="input" value="Album photo">
+        </div>
+        <div class="form-field">
+          <label class="field-label">Description courte</label>
+          <textarea class="textarea" rows="2">Un livre relié artisanal avec les plus belles images du jour J, à garder toute une vie.</textarea>
+        </div>
+      </div>
+
+      <button class="add-more-btn">+ Ajouter un rêve</button>
+    </section>
+
+    <!-- Section IV · Le programme -->
+    <section class="config-section">
+      <div class="config-section-head">
+        <div>
+          <div class="eyebrow">Étape IV</div>
+          <h2 class="h2-ed">Le <em>programme</em> du jour J</h2>
+          <p class="muted body-ed" style="font-size: 0.9rem; margin-top: 4px;">Vos proches verront le déroulé. Utile pour qu'ils sachent à quoi s'attendre.</p>
+        </div>
+        <div class="config-section-num">IV</div>
+      </div>
+
+      <div class="program-editor-row">
+        <input type="text" value="15h00" placeholder="Heure">
+        <input type="text" value="Cérémonie laïque — Sous les platanes du Domaine" placeholder="Description">
+        <button class="dream-remove-btn">✕</button>
+      </div>
+
+      <div class="program-editor-row">
+        <input type="text" value="17h00" placeholder="Heure">
+        <input type="text" value="Vin d'honneur — Champagne &amp; mignardises catalanes" placeholder="Description">
+        <button class="dream-remove-btn">✕</button>
+      </div>
+
+      <div class="program-editor-row">
+        <input type="text" value="20h00" placeholder="Heure">
+        <input type="text" value="Dîner — Menu signé Maison Cazals" placeholder="Description">
+        <button class="dream-remove-btn">✕</button>
+      </div>
+
+      <div class="program-editor-row">
+        <input type="text" value="22h30" placeholder="Heure">
+        <input type="text" value="Ouverture du bal — Jusqu'au bout de la nuit" placeholder="Description">
+        <button class="dream-remove-btn">✕</button>
+      </div>
+
+      <button class="add-more-btn">+ Ajouter une étape</button>
+    </section>
+
+    <!-- Section V · Les réglages -->
+    <section class="config-section">
+      <div class="config-section-head">
+        <div>
+          <div class="eyebrow">Étape V</div>
+          <h2 class="h2-ed"><em>Réglages</em> de publication</h2>
+        </div>
+        <div class="config-section-num">V</div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Adresse URL de votre cagnotte</label>
+        <div style="display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--bone); padding: 10px 0;">
+          <span class="muted" style="font-size: 0.95rem;">lecarnetdesnoces.fr/cagnotte/</span>
+          <input type="text" value="sophie-marc-2027" style="flex: 1; border: none; outline: none; font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--gold); font-style: italic; background: transparent;">
+        </div>
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">Statut de la cagnotte</label>
+        <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+          <span class="chip active">Publique &amp; active</span>
+          <span class="chip">En brouillon</span>
+          <span class="chip">Fermée (ne reçoit plus de dons)</span>
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <div class="check-box checked">✓</div>
+        <span class="body-ed">Afficher le livre d'or (messages des participants)</span>
+      </div>
+
+      <div class="toggle-row">
+        <div class="check-box checked">✓</div>
+        <span class="body-ed">Autoriser les dons anonymes</span>
+      </div>
+
+      <div class="toggle-row">
+        <div class="check-box">✓</div>
+        <span class="body-ed">M'envoyer un email à chaque nouvelle participation</span>
+      </div>
+
+      <div class="toggle-row">
+        <div class="check-box checked">✓</div>
+        <span class="body-ed">Envoyer un email récapitulatif chaque semaine</span>
+      </div>
+    </section>
+
+    <!-- Actions -->
+    <div class="config-actions">
+      <button class="btn-gold">Enregistrer &amp; publier</button>
+      <button class="btn-ghost">Enregistrer brouillon</button>
+      <button class="btn-ghost" onclick="showScreen('public')">Aperçu de ma page</button>
+    </div>
+
+    <div class="preview-band">
+      <div style="flex: 1; min-width: 200px;">
+        <div class="eyebrow" style="color: var(--gold); margin-bottom: 4px;">Aperçu</div>
+        <span>Voyez votre page comme vos invités la verront.</span>
+      </div>
+      <button class="btn-ghost" onclick="showScreen('public')">Aperçu public →</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     ÉCRAN 2 · ADMIN COUPLE (suivi)
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-admin">
+  <div class="admin-container">
+
+    <div class="admin-head">
+      <div class="eyebrow">Mon carnet · Cagnotte en ligne</div>
+      <h1 class="h1-ed">Votre <em>cagnotte</em></h1>
+      <p class="muted body-ed">Suivez les participations en temps réel, retirez quand vous êtes prêts.</p>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card-ad">
+        <div class="stat-ey">Collecté</div>
+        <div class="stat-n">2 500 €</div>
+        <div class="stat-sub">brut, avant commission</div>
+      </div>
+      <div class="stat-card-ad">
+        <div class="stat-ey">Participants</div>
+        <div class="stat-n ink">50</div>
+        <div class="stat-sub">+5 cette semaine</div>
+      </div>
+    </div>
+
+    <div class="link-box-wrap">
+      <div class="eyebrow" style="margin-bottom: 6px;">Lien public à partager</div>
+      <div class="link-box">
+        <div class="link-url">lecarnetdesnoces.fr/cagnotte/<em>sophie-marc-2027</em></div>
+        <button class="btn-ghost">Copier</button>
+      </div>
+      <div class="share-buttons">
+        <button class="btn-ghost">Email</button>
+        <button class="btn-ghost">SMS</button>
+        <button class="btn-ghost">WhatsApp</button>
+        <button class="btn-ghost">QR code</button>
+        <button class="btn-ghost" onclick="showScreen('public')">Aperçu public</button>
+        <button class="btn-ghost" onclick="showScreen('config')">Modifier la page</button>
+      </div>
+    </div>
+
+    <div class="goals-admin-section">
+      <div class="section-head">
+        <div>
+          <h2 class="h2-ed">Vos <em>trois rêves</em></h2>
+          <p class="muted body-ed" style="font-size: 0.85rem;">Les invités choisissent lequel soutenir s'ils le souhaitent.</p>
+        </div>
+        <button class="btn-ghost" onclick="showScreen('config')">Modifier les rêves</button>
+      </div>
+
+      <div class="goal-row-ad">
+        <div class="goal-row-num">I</div>
+        <div>
+          <div class="goal-row-title">Voyage de noces</div>
+          <div class="goal-row-sub">Japon, 10 jours</div>
+        </div>
+        <div class="goal-row-count">28 dons</div>
+        <button class="btn-ghost" onclick="showScreen('config')">Modifier</button>
+      </div>
+
+      <div class="goal-row-ad">
+        <div class="goal-row-num">II</div>
+        <div>
+          <div class="goal-row-title">Notre maison</div>
+          <div class="goal-row-sub">Rénovation cuisine</div>
+        </div>
+        <div class="goal-row-count">12 dons</div>
+        <button class="btn-ghost" onclick="showScreen('config')">Modifier</button>
+      </div>
+
+      <div class="goal-row-ad">
+        <div class="goal-row-num">III</div>
+        <div>
+          <div class="goal-row-title">Album photo</div>
+          <div class="goal-row-sub">Livre artisanal</div>
+        </div>
+        <div class="goal-row-count">10 dons</div>
+        <button class="btn-ghost" onclick="showScreen('config')">Modifier</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom: 28px;">
+      <div class="section-head">
+        <h2 class="h2-ed">Dernières <em>participations</em></h2>
+      </div>
+
+      <div class="participant-row">
+        <div>
+          <div class="participant-name">Claire &amp; Paul</div>
+          <div class="participant-meta">Il y a 2h · Voyage de noces</div>
+        </div>
+        <div class="participant-msg">« Tous nos vœux de bonheur »</div>
+        <div class="participant-amount">80 €</div>
+      </div>
+
+      <div class="participant-row">
+        <div>
+          <div class="participant-name">Tante Hélène</div>
+          <div class="participant-meta">Hier · Voyage de noces</div>
+        </div>
+        <div class="participant-msg">« Pour votre voyage »</div>
+        <div class="participant-amount">150 €</div>
+      </div>
+
+      <div class="participant-row">
+        <div>
+          <div class="participant-name" style="font-style: italic;">Anonyme</div>
+          <div class="participant-meta">Hier · Peu importe</div>
+        </div>
+        <div class="participant-msg">« Soyez heureux »</div>
+        <div class="participant-amount">50 €</div>
+      </div>
+
+      <div class="participant-row">
+        <div>
+          <div class="participant-name">Collègues bureau</div>
+          <div class="participant-meta">Il y a 3 jours · Notre maison</div>
+        </div>
+        <div class="participant-msg">« De toute l'équipe »</div>
+        <div class="participant-amount">320 €</div>
+      </div>
+
+      <div style="text-align: center; margin-top: 14px;">
+        <button class="btn-ghost">Voir les 50 participations</button>
+      </div>
+    </div>
+
+    <div class="withdraw-panel">
+      <div class="eyebrow" style="color: var(--gold);">Retirer vos fonds</div>
+      <h3 class="h2-ed" style="font-size: 1.5rem; margin-top: 6px;">Demander un <em>virement</em></h3>
+      <p class="muted body-ed" style="font-size: 0.9rem; margin: 6px 0 10px;">Un seul virement quand vous êtes prêts. La commission Le Carnet (3 %) est prélevée uniquement à ce moment-là.</p>
+
+      <div class="withdraw-calc">
+        <div class="wc-row">
+          <span>Cagnotte brute</span>
+          <span>2 500,00 €</span>
+        </div>
+        <div class="wc-row">
+          <span>Commission Le Carnet (3 %)</span>
+          <span>− 75,00 €</span>
+        </div>
+        <div class="wc-row">
+          <span>Frais bancaires virement</span>
+          <span>− 0,25 €</span>
+        </div>
+        <div class="wc-row total">
+          <span>Vous recevrez</span>
+          <span><em>2 424,75 €</em></span>
+        </div>
+      </div>
+
+      <div class="iban-info">
+        <div>
+          <div class="eyebrow">IBAN enregistré</div>
+          <div style="font-family: 'Jost', sans-serif; font-size: 0.92rem; margin-top: 6px;">FR76 **** **** 8421</div>
+        </div>
+        <div>
+          <div class="eyebrow">Délai d'arrivée</div>
+          <div style="font-family: 'Jost', sans-serif; font-size: 0.92rem; margin-top: 6px;">2 à 3 jours ouvrés</div>
+        </div>
+      </div>
+
+      <div class="withdraw-cta-row">
+        <button class="btn-gold">Demander le virement</button>
+        <button class="btn-ghost">Modifier l'IBAN</button>
+        <button class="btn-ghost">Attendre encore</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     ÉCRAN 3 · PAGE PUBLIQUE (ce que voient les invités)
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-public">
+  <div class="public-container">
+
+    <div class="public-hero">
+      <div class="eyebrow">Leur cagnotte · Sophie &amp; Marc</div>
+      <h1 class="h1-ed">Notre <em>voyage</em> à deux<br>commence ici.</h1>
+      <p class="body-ed muted" style="max-width: 480px; margin: 8px auto 0;">Vous avez choisi de participer à notre bonheur — merci du fond du cœur. Ce carnet de vœux ouvre notre nouvelle vie à deux.</p>
+      <div class="ornament">· · ·</div>
+    </div>
+
+    <div class="public-body">
+      <div class="public-photo">
+        <div>
+          <div class="eyebrow" style="color: var(--ivory); margin-bottom: 6px;">Photo du couple</div>
+          <div style="font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.1rem;">Sophie &amp; Marc</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="eyebrow" style="margin-bottom: 10px;">Notre histoire</div>
+        <p class="body-ed">Nous nous sommes rencontrés à Perpignan, un après-midi de septembre, dans une librairie qui sentait le vieux papier. Sept ans plus tard, nous nous disons oui au Domaine de la Tuilerie, le <em style="color: var(--gold); font-style: italic;">12 juin 2027</em>, entourés de celles et ceux qui comptent.</p>
+        <p class="body-ed" style="margin-top: 12px;">Votre présence est déjà le plus beau des cadeaux. Si vous souhaitez aller plus loin, nous avons rassemblé ici quelques rêves que vous pouvez soutenir — à votre rythme, à votre échelle.</p>
+      </div>
+    </div>
+
+    <div class="public-goals-wrap">
+      <div class="eyebrow">Trois rêves</div>
+      <h2 class="h2-ed" style="margin-top: 8px;">Nos <em>envies</em> pour demain</h2>
+
+      <div class="goals-grid">
+        <div class="goal-card">
+          <div class="goal-num">I</div>
+          <div class="h2-ed" style="font-size: 1.1rem;">Voyage de noces</div>
+          <p class="body-ed muted" style="font-size: 0.85rem; line-height: 1.55; margin-top: 8px;">Dix jours au Japon, au printemps prochain — Kyoto, Naoshima et la mer intérieure.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="goal-num">II</div>
+          <div class="h2-ed" style="font-size: 1.1rem;">Notre maison</div>
+          <p class="body-ed muted" style="font-size: 0.85rem; line-height: 1.55; margin-top: 8px;">Rénover la cuisine du petit mas que nous venons d'acheter à Ille-sur-Têt.</p>
+        </div>
+
+        <div class="goal-card">
+          <div class="goal-num">III</div>
+          <div class="h2-ed" style="font-size: 1.1rem;">Album photo</div>
+          <p class="body-ed muted" style="font-size: 0.85rem; line-height: 1.55; margin-top: 8px;">Un livre relié artisanal avec les plus belles images du jour J, à garder toute une vie.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="public-cta-band">
+      <button class="btn-gold" onclick="showScreen('don')">Participer à la cagnotte</button>
+      <div class="body-ed muted" style="font-size: 0.8rem; margin-top: 12px;">Paiement sécurisé par Stripe · carte bancaire · 3D Secure</div>
+    </div>
+
+    <div class="public-program">
+      <div class="eyebrow">Le jour J</div>
+      <h2 class="h2-ed" style="margin-top: 8px;">Notre <em>déroulé</em></h2>
+      <p class="body-ed muted" style="font-size: 0.9rem; margin-bottom: 22px;">Pour que vous sachiez à quoi vous attendre.</p>
+
+      <div style="max-width: 420px; margin: 0 auto;">
+        <div class="program-row">
+          <div class="program-time">15H00</div>
+          <div><div class="program-title">Cérémonie laïque</div><div class="body-ed muted" style="font-size: 0.9rem;">Sous les platanes du Domaine</div></div>
+        </div>
+        <div class="program-row">
+          <div class="program-time">17H00</div>
+          <div><div class="program-title">Vin d'honneur</div><div class="body-ed muted" style="font-size: 0.9rem;">Champagne &amp; mignardises catalanes</div></div>
+        </div>
+        <div class="program-row">
+          <div class="program-time">20H00</div>
+          <div><div class="program-title">Dîner</div><div class="body-ed muted" style="font-size: 0.9rem;">Menu signé Maison Cazals · produits locaux</div></div>
+        </div>
+        <div class="program-row">
+          <div class="program-time">22H30</div>
+          <div><div class="program-title">Ouverture du bal</div><div class="body-ed muted" style="font-size: 0.9rem;">Jusqu'au bout de la nuit</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="public-guestbook">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div class="eyebrow">Livre d'or</div>
+        <h2 class="h2-ed" style="margin-top: 8px;">Les <em>mots</em> de vos proches</h2>
+      </div>
+
+      <div style="max-width: 540px; margin: 0 auto;">
+        <div class="msg-card">
+          <div class="msg-text">« Tous nos vœux de bonheur, on a hâte de danser avec vous. »</div>
+          <div class="msg-sig">Claire &amp; Paul</div>
+        </div>
+
+        <div class="msg-card">
+          <div class="msg-text">« Un petit quelque chose pour votre voyage — envoyez-nous une carte de Kyoto. »</div>
+          <div class="msg-sig">Tante Hélène</div>
+        </div>
+
+        <div class="msg-card">
+          <div class="msg-text">« Quelle belle nouvelle. Soyez heureux, simplement. »</div>
+          <div class="msg-sig">Un ami · anonyme</div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 16px;">
+        <button class="btn-ghost">Voir tous les messages</button>
+      </div>
+    </div>
+
+    <div class="public-footer">
+      Cagnotte propulsée par Le Carnet des noces · paiement sécurisé Stripe
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     ÉCRAN 4 · FORMULAIRE DE DON (invité)
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="s-don">
+  <div class="don-container">
+
+    <div class="don-hero">
+      <div class="eyebrow">Pour Sophie &amp; Marc</div>
+      <h1 class="h1-ed" style="font-size: 2rem;">Votre <em>participation</em></h1>
+      <p class="muted body-ed" style="margin-top: 6px;">Paiement sécurisé · carte bancaire uniquement</p>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Montant de votre don</label>
+      <div class="preset-row">
+        <button class="preset">30 €</button>
+        <button class="preset active">50 €</button>
+        <button class="preset">100 €</button>
+        <button class="preset">200 €</button>
+      </div>
+      <input type="text" class="input" value="50" placeholder="Ou saisissez un autre montant">
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Pour quel rêve ? (optionnel)</label>
+      <div class="chip-row">
+        <span class="chip active">Voyage de noces</span>
+        <span class="chip">Notre maison</span>
+        <span class="chip">Album photo</span>
+        <span class="chip">Peu importe</span>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Un petit mot pour les mariés (optionnel)</label>
+      <textarea class="textarea" rows="3" placeholder="Un souhait, une anecdote, un conseil…"></textarea>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Votre nom</label>
+      <input type="text" class="input" value="Claire &amp; Paul" placeholder="Comment signer votre message">
+
+      <div class="toggle-row" style="margin-top: 12px;">
+        <div class="check-box">✓</div>
+        <span class="body-ed muted" style="font-size: 0.92rem;">Rester anonyme (votre nom n'apparaîtra pas dans le livre d'or)</span>
+      </div>
+
+      <div class="toggle-row">
+        <div class="check-box checked">✓</div>
+        <span class="body-ed muted" style="font-size: 0.92rem;">Recevoir un accusé de réception par email</span>
+      </div>
+    </div>
+
+    <div class="breakdown-box">
+      <div class="breakdown-row">
+        <span>Votre don aux mariés</span>
+        <span>50,00 €</span>
+      </div>
+      <div class="breakdown-row">
+        <span>Frais bancaires sécurisés</span>
+        <span>1,00 €</span>
+      </div>
+      <div class="breakdown-total">
+        <span>Total à régler</span>
+        <span><em>51,00 €</em></span>
+      </div>
+      <div class="breakdown-note">Les 50 € arrivent en totalité dans la cagnotte de Sophie &amp; Marc. Les frais bancaires couvrent le traitement sécurisé de votre carte.</div>
+    </div>
+
+    <button class="btn-gold" style="width: 100%; padding: 16px 28px;">Régler 51,00 € · Carte bancaire</button>
+
+    <div style="text-align: center; margin-top: 14px; font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--taupe); font-size: 0.78rem;">3D Secure · Stripe · aucune donnée stockée</div>
+
+  </div>
+</div>
+
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  const screen = document.getElementById('s-' + name);
+  if (screen) screen.classList.add('active');
+  const tab = document.querySelector('.nav-tab[data-s="' + name + '"]');
+  if (tab) tab.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const s = tab.getAttribute('data-s');
+    if (s) showScreen(s);
+  });
+});
+
+document.querySelectorAll('.toggle-row').forEach(row => {
+  row.addEventListener('click', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    const box = row.querySelector('.check-box');
+    box.classList.toggle('checked');
+  });
+});
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const siblings = chip.parentElement.querySelectorAll('.chip');
+    if (chip.classList.contains('active')) return;
+    siblings.forEach(s => s.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.preset').forEach(btn => {
+  btn.addEventListener('click', () => {
+    btn.parentElement.querySelectorAll('.preset').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>

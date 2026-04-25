@@ -18,8 +18,32 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === "payment_intent.succeeded") {
-    const intent = event.data.object as Stripe.PaymentIntent;
-    const linkId  = intent.metadata?.paymentLinkId;
+    const intent     = event.data.object as Stripe.PaymentIntent;
+    const donationId = intent.metadata?.donationId;
+    const linkId     = intent.metadata?.paymentLinkId;
+
+    // ── Don cagnotte ──────────────────────────────────────────
+    if (donationId) {
+      const donation = await db.cagnotteDonation.findUnique({
+        where:   { id: donationId },
+        include: { cagnotte: { include: { couple: { select: { email: true, prenoms: true } } } } },
+      });
+      if (donation && donation.status === "PENDING") {
+        await db.cagnotteDonation.update({
+          where: { id: donationId },
+          data:  { status: "PAID", paidAt: new Date() },
+        });
+        // Emails via lib/email
+        const { sendDonationReceiptEmail, sendDonationNotifEmail } = await import("@/lib/email");
+        try { await sendDonationReceiptEmail({ to: donation.donorEmail, couplePrenoms: donation.cagnotte.couple.prenoms, amountNet: donation.amountNet }); } catch {}
+        if (donation.cagnotte.emailOnDonation) {
+          try { await sendDonationNotifEmail({ to: donation.cagnotte.couple.email, amountNet: donation.amountNet }); } catch {}
+        }
+      }
+      return NextResponse.json({ ok: true });
+    }
+
+    // ── Paiement prestataire ──────────────────────────────────
     if (!linkId) return NextResponse.json({ ok: true });
 
     const link = await db.paymentLink.findUnique({

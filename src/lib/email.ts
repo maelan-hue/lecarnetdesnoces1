@@ -154,3 +154,19 @@ export async function sendPaymentReceiptEmail(opts: {
     `,
   });
 }
+
+export async function sendDonationReceiptEmail(opts: { to: string; couplePrenoms: string; amountNet: number }) {
+  return resend.emails.send({
+    from: FROM, to: opts.to,
+    subject: `Merci pour votre participation — ${opts.couplePrenoms}`,
+    html: `<p>Votre don de ${(opts.amountNet/100).toLocaleString("fr-FR")} € pour ${opts.couplePrenoms} a bien été reçu. Merci !</p><hr/><p style="font-size:12px;color:#8A7B63;">Le Carnet des noces · Perpignan &amp; Roussillon</p>`,
+  });
+}
+
+export async function sendDonationNotifEmail(opts: { to: string; amountNet: number }) {
+  return resend.emails.send({
+    from: FROM, to: opts.to,
+    subject: `Nouveau don reçu — ${(opts.amountNet/100).toLocaleString("fr-FR")} €`,
+    html: `<p>Vous venez de recevoir un don de ${(opts.amountNet/100).toLocaleString("fr-FR")} € sur votre cagnotte.</p><p><a href="${APP_URL}/carnet/cagnotte" style="color:#A8833B;">Voir ma cagnotte</a></p>`,
+  });
+}

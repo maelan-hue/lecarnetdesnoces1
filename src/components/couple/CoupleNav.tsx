@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 const LINKS = [
-  { href: "/carnet",       label: "Mon carnet",    unread: false },
-  { href: "/invites",      label: "Invités",       unread: false },
-  { href: "/prestataires", label: "Prestataires",  unread: false },
-  { href: "/messages",     label: "Messages",      unread: true  },
-  { href: "/compte",       label: "Mon compte",    unread: false },
+  { href: "/carnet",           label: "Mon carnet",   unread: false },
+  { href: "/invites",          label: "Invités",      unread: false },
+  { href: "/prestataires",     label: "Prestataires", unread: false },
+  { href: "/carnet/cagnotte",  label: "Cagnotte",     unread: false },
+  { href: "/messages",         label: "Messages",     unread: true  },
+  { href: "/compte",           label: "Mon compte",   unread: false },
 ];
 
 export default function CoupleNav({ prenoms }: { prenoms: string }) {

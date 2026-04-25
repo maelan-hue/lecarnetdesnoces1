@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
 // Chemins nécessitant une session couple
-const COUPLE_PATHS = ["/carnet", "/invites", "/messages/", "/messages/nouveau", "/compte"];
+const COUPLE_PATHS = ["/carnet", "/invites", "/messages/", "/messages/nouveau", "/compte", "/carnet/cagnotte"];
 // Chemins nécessitant une session pro
 const PRO_PATHS    = ["/dashboard"];
 // Chemins nécessitant une session admin
