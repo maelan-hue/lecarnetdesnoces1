@@ -11,6 +11,7 @@ type Props = {
   cagnotteTitle: string;
   dreams: Dream[];
   publishableKey: string;
+  disabled?: boolean;
 };
 
 const PRESETS = [30, 50, 100, 200];
@@ -52,7 +53,7 @@ function CheckoutForm({ slug, amountCents, totalCents }: { slug: string; amountC
   );
 }
 
-export default function DonationForm({ slug, cagnotteTitle, dreams, publishableKey }: Props) {
+export default function DonationForm({ slug, cagnotteTitle, dreams, publishableKey, disabled = false }: Props) {
   const [amount,      setAmount]      = useState(50);
   const [customAmt,   setCustomAmt]   = useState("");
   const [dreamId,     setDreamId]     = useState<string | null>(null);
@@ -95,6 +96,19 @@ export default function DonationForm({ slug, cagnotteTitle, dreams, publishableK
     if (!res.ok) { setError(json.error ?? "Erreur."); return; }
     setClientSecret(json.clientSecret);
   };
+
+  if (disabled) {
+    return (
+      <div style={{ background:"var(--paper)", padding:"44px 38px", maxWidth:580, margin:"0 auto", textAlign:"center", boxShadow:"0 4px 20px rgba(0,0,0,0.04)" }}>
+        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"3rem", color:"var(--gold)", marginBottom:16 }}>◎</div>
+        <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.6rem", fontWeight:300, marginBottom:12 }}>Aperçu brouillon</h2>
+        <p style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"var(--mute)", marginBottom:24 }}>
+          Le formulaire de don est désactivé en mode brouillon.<br/>
+          Publiez votre cagnotte pour que vos invités puissent participer.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background:"var(--paper)", padding:"44px 38px", maxWidth:580, margin:"0 auto", boxShadow:"0 4px 20px rgba(0,0,0,0.04)" }}>
