@@ -29,22 +29,26 @@ export default function LandingUserMenu({ name, role, dashboardUrl }: Props) {
     router.refresh();
   };
 
-  const firstName = name.split(/[&\s]+/)[0];
-
   return (
     <div ref={ref} style={{ position: "relative" }}>
       <button
         onClick={() => setOpen(!open)}
         style={{
-          background: "none", border: "1px solid rgba(168,131,59,0.4)",
-          color: "var(--gold)", cursor: "pointer",
-          fontFamily: "'Jost', sans-serif", fontSize: "0.62rem",
-          letterSpacing: "0.14em", textTransform: "uppercase",
-          padding: "6px 14px", display: "flex", alignItems: "center", gap: 8,
+          background: open ? "var(--gold)" : "rgba(168,131,59,0.12)",
+          border: "1px solid var(--gold)",
+          color: open ? "var(--paper)" : "var(--gold)",
+          cursor: "pointer",
+          fontFamily: "'Cormorant Garamond', serif",
+          fontSize: "1rem",
+          fontWeight: 500,
+          letterSpacing: "0.04em",
+          padding: "10px 22px",
+          display: "flex", alignItems: "center", gap: 10,
           transition: "all 0.2s",
+          whiteSpace: "nowrap",
         }}
       >
-        {firstName} {open ? "▲" : "▼"}
+        {name} <span style={{ fontSize: "0.6rem" }}>{open ? "▲" : "▼"}</span>
       </button>
 
       {open && (
