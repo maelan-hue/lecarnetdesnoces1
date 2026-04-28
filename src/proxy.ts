@@ -13,10 +13,11 @@ const LOGIN_PAGES  = ["/connexion", "/connexion-pro", "/admin/connexion"];
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Pages de connexion : toujours accessibles
+  // Pages de connexion + page /admin (redirection) : toujours accessibles
   if (LOGIN_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
     return NextResponse.next();
   }
+  if (pathname === "/admin") return NextResponse.next();
 
   // /prestataires/* : page publique — jamais protégée
   if (pathname.startsWith("/prestataires")) return NextResponse.next();
@@ -62,9 +63,7 @@ export const config = {
     "/compte/:path*",
     "/compte",
     "/dashboard/:path*",
-    "/admin/dashboard/:path*",
-    "/connexion",
-    "/connexion-pro",
-    "/admin/connexion",
+    "/admin",
+    "/admin/:path*",
   ],
 };
