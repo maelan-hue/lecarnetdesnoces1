@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import DateEditor from "@/components/couple/DateEditor";
-import CategoryVendorSection from "@/components/couple/CategoryVendorSection";
-import { CATEGORY_TO_PRO } from "@/lib/utils";
+import { CATEGORY_TO_PRO, PRO_CATEGORIES } from "@/lib/utils";
 
 type Task = {
   id: string; title: string; description?: string | null;
@@ -100,40 +99,35 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
         guestTotal={data.guestTotal}
       />
 
-      {/* ── PRESTATAIRES SAUVEGARDÉS ── */}
-      {usedCategories.length > 0 && (
-        <div style={{ marginBottom: 40 }}>
-          <div className="section-title" style={{ marginBottom: 6 }}>
-            Mes <em style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", color:"var(--gold)" }}>prestataires</em>
-          </div>
-          <p className="section-hint">
+      {/* ── BOUTON MES FAVORIS ── */}
+      <div style={{ marginBottom: 32, display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
+        <Link
+          href="/carnet/favoris"
+          style={{
+            display:"inline-flex", alignItems:"center", gap:10,
+            padding:"12px 22px", background:"var(--ivory)",
+            border:"1px solid var(--bone)", borderLeft:"2px solid var(--gold)",
+            textDecoration:"none", transition:"border-color 0.2s",
+          }}
+        >
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"1rem", color:"var(--gold)" }}>♥</span>
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", fontWeight:500, color:"var(--ink)" }}>
+            Mes prestataires favoris
+          </span>
+          {relations.length > 0 && (
+            <span style={{ background:"var(--gold)", color:"var(--paper)", fontSize:"0.6rem", fontFamily:"'Jost',sans-serif", fontWeight:600, padding:"1px 8px", borderRadius:100 }}>
+              {relations.length}
+            </span>
+          )}
+          <span style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)" }}>→</span>
+        </Link>
+        {relations.length > 0 && (
+          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.85rem", color:"var(--mute)" }}>
             {relations.filter((r) => r.status === "RETAINED").length} retenu{relations.filter((r) => r.status === "RETAINED").length > 1 ? "s" : ""} ·{" "}
             {relations.filter((r) => r.status === "FAVORITE").length} favori{relations.filter((r) => r.status === "FAVORITE").length > 1 ? "s" : ""} en comparaison
-          </p>
-          {usedCategories.map((cat) => {
-            const catRelations = relations.filter((r) => r.category === cat);
-            const taskCat = Object.entries(CATEGORY_TO_PRO).find(([, v]) => v === cat)?.[0] ?? cat.toLowerCase();
-            return (
-              <div key={cat} style={{ marginBottom: 24 }}>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.2rem", fontWeight:500, marginBottom:10, paddingBottom:8, borderBottom:"1px dashed var(--bone)" }}>
-                  {cat.charAt(0) + cat.slice(1).toLowerCase().replace(/_/g, " ")}
-                </div>
-                <CategoryVendorSection
-                  category={cat}
-                  taskCategory={taskCat}
-                  relations={catRelations}
-                  onRelationsChange={(updated) => {
-                    setRelations((prev) => [
-                      ...prev.filter((r) => r.category !== cat),
-                      ...updated,
-                    ]);
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
+          </span>
+        )}
+      </div>
 
       {/* ── PHASES ── */}
       <div className="section-title" style={{ marginBottom: 6 }}>
@@ -188,7 +182,16 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                     const catFavCount = catRels.filter((r) => r.status === "FAVORITE").length;
 
                     return (
-                      <div key={task.id} className={`task clickable ${cls}`} onClick={() => router.push(searchUrl)}>
+                      <div key={task.id}>
+                        {/* Mini-accordéon favoris inline */}
+                        {catRels.length > 0 && (
+                          <InlineFavorites
+                            category={proCategory!}
+                            catLabel={PRO_CATEGORIES[proCategory!] ?? task.title}
+                            relations={catRels}
+                          />
+                        )}
+                        <div className={`task clickable ${cls}`} onClick={() => router.push(searchUrl)}>
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
                           <div className="task-name">{task.title}</div>
@@ -213,6 +216,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                             </span>
                           )}
                         </div>
+                        </div>{/* fin task */}
                       </div>
                     );
                   })}
@@ -222,6 +226,56 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
           );
         })}
       </div>
+    </div>
+  );
+}
+
+// ── Composant mini-accordéon favoris inline ─────────────────────────────────
+
+type InlineRel = { proId:string; status:"FAVORITE"|"RETAINED"; pro:{ id:string; name:string; slug:string; profilePhoto:string|null; tarifs:{priceFrom:number}[] } };
+
+function InlineFavorites({ category, catLabel, relations }: { category:string; catLabel:string; relations:InlineRel[] }) {
+  const [open, setOpen] = useState(false);
+  const retained  = relations.find((r) => r.status === "RETAINED");
+  const favCount  = relations.filter((r) => r.status === "FAVORITE").length;
+
+  return (
+    <div style={{ borderBottom:"1px dashed var(--bone)", marginBottom:0 }}>
+      <div
+        onClick={(e) => { e.stopPropagation(); setOpen((o) => !o); }}
+        style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0 8px 34px", cursor:"pointer" }}
+      >
+        <span style={{ color:"var(--terracotta)", fontSize:"0.9rem" }}>♥</span>
+        <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.85rem", color:"var(--mute)" }}>
+          {retained
+            ? <><strong style={{ fontStyle:"normal", color:"var(--gold)" }}>✦ {retained.pro.name}</strong>{favCount > 0 ? ` · ${favCount} en comparaison` : ""}</>
+            : <>{favCount} favori{favCount > 1 ? "s" : ""} — {catLabel.toLowerCase()}</>
+          }
+        </span>
+        <svg style={{ width:11, height:11, color:"var(--mute)", transition:"transform 0.2s", transform:open?"rotate(180deg)":"none", marginLeft:"auto", marginRight:34, flexShrink:0 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      {open && (
+        <div style={{ paddingLeft:34, paddingBottom:10 }} onClick={(e) => e.stopPropagation()}>
+          {relations.map((rel) => (
+            <div key={rel.proId} style={{ display:"flex", alignItems:"center", gap:10, padding:"6px 0", borderTop:"0.5px dashed var(--bone)" }}>
+              {rel.pro.profilePhoto
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={rel.pro.profilePhoto} alt={rel.pro.name} style={{ width:28, height:28, borderRadius:"50%", objectFit:"cover", flexShrink:0 }} />
+                : <div style={{ width:28, height:28, borderRadius:"50%", background:"var(--linen)", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.7rem", color:"var(--taupe)", flexShrink:0 }}>{rel.pro.name[0]}</div>
+              }
+              <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"0.9rem", flex:1 }}>
+                {rel.status === "RETAINED" && <span style={{ color:"var(--gold)", marginRight:6 }}>✦</span>}
+                {rel.pro.name}
+              </span>
+              <a href={`/prestataires/${rel.pro.slug}`} onClick={(e) => e.stopPropagation()} style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.55rem", letterSpacing:"0.12em", textTransform:"uppercase", color:"var(--gold)", textDecoration:"none" }}>Fiche →</a>
+            </div>
+          ))}
+          <a href="/carnet/favoris" onClick={(e) => e.stopPropagation()} style={{ display:"block", marginTop:8, fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.8rem", color:"var(--mute)" }}>
+            Gérer mes favoris →
+          </a>
+        </div>
+      )}
     </div>
   );
 }
