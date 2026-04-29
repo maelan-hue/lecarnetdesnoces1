@@ -4,6 +4,18 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
+// Sous-routes du carnet qui ont leur propre onglet nav
+const CARNET_SUB_ROUTES = ["/carnet/cagnotte", "/carnet/budget", "/carnet/favoris"];
+
+function isActive(pathname: string, href: string): boolean {
+  if (!pathname.startsWith(href)) return false;
+  // Pour "/carnet" uniquement : ne pas s'activer si on est sur une sous-route avec son propre onglet
+  if (href === "/carnet") {
+    return !CARNET_SUB_ROUTES.some((sub) => pathname.startsWith(sub));
+  }
+  return true;
+}
+
 const LINKS = [
   { href: "/carnet",           label: "Mon carnet",   unread: false },
   { href: "/invites",          label: "Invités",      unread: false },
@@ -48,7 +60,7 @@ export default function CoupleNav({ prenoms }: { prenoms: string }) {
           <Link
             key={href}
             href={href}
-            className={`couple-nav-link${pathname.startsWith(href) ? " active" : ""}`}
+            className={`couple-nav-link${isActive(pathname, href) ? " active" : ""}`}
             style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 6 }}
           >
             {label}
