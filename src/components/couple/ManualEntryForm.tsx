@@ -67,8 +67,8 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
 
     setSaving(true);
     const body = {
-      vendorName:    mode === "cas-b" ? preFilledName : vendorName,
-      vendorCategory:mode === "cas-b" ? preFilledCategory : vendorCategory,
+      vendorName,
+      vendorCategory,
       vendorCity:    vendorCity || null,
       vendorEmail:   vendorEmail || null,
       vendorPhone:   vendorPhone || null,
@@ -242,7 +242,7 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
       <div style={{ background:"var(--ivory)", padding:"16px 20px", borderLeft:"2px solid var(--gold)", marginBottom:24, fontFamily:"'Cormorant Garamond',serif" }}>
         <div style={{ fontSize:"0.6rem", letterSpacing:"0.2em", textTransform:"uppercase", color:"var(--gold)", marginBottom:10, fontWeight:500 }}>Impact sur votre budget</div>
         <div style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", fontSize:"0.9rem", color:"var(--mute)" }}>
-          <span>Catégorie</span><span>{mode==="cas-b" ? PRO_CATEGORIES[preFilledCategory!]??preFilledCategory : PRO_CATEGORIES[vendorCategory]??vendorCategory}</span>
+          <span>Catégorie</span><span>{PRO_CATEGORIES[vendorCategory] ?? vendorCategory}</span>
         </div>
         <div style={{ display:"flex", justifyContent:"space-between", padding:"5px 0", fontSize:"0.9rem", color:"var(--mute)" }}>
           <span>Devis total</span><span>{totalCents > 0 ? `${(totalCents/100).toLocaleString("fr-FR")} €` : "—"}</span>
