@@ -139,7 +139,6 @@ export default function DateEditor({
             <span className="cd-l">Invités →</span>
           </div>
         </a>
-        <BudgetSlot budgetEstimate={budgetEstimate} />
         <button
           onClick={() => setEditing(true)}
           style={{
