@@ -19,6 +19,12 @@ export default async function CarnetPage() {
     },
   });
 
+  // Entrées budget manuelles pour les liens directs depuis le carnet
+  const manualEntries = await db.manualVendorEntry.findMany({
+    where:   { coupleId: session.sub },
+    select:  { id: true, vendorName: true, vendorCategory: true },
+  });
+
   if (!couple) redirect("/connexion");
 
   // Budget engagé = même calcul que BudgetSlot (centimes)
@@ -85,6 +91,7 @@ export default async function CarnetPage() {
       guestTotal,
       totalTasks:     couple.tasks.length,
       phases,
+      manualEntries:  manualEntries.map((e) => ({ id: e.id, vendorName: e.vendorName, vendorCategory: e.vendorCategory })),
     }} />
   );
 }

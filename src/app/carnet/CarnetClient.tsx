@@ -18,6 +18,8 @@ type Phase = {
   tasks: Task[];
 };
 
+type ManualEntry = { id: string; vendorName: string; vendorCategory: string };
+
 type CarnetData = {
   prenoms: string; weddingDate: string | null; weddingCity: string | null;
   weddingVenue: string | null; guestCount: number | null;
@@ -25,6 +27,7 @@ type CarnetData = {
   days: number | null; months: number | null;
   guestTotal: number; totalTasks: number;
   phases: Phase[];
+  manualEntries: ManualEntry[];
 };
 
 type Relation = {
@@ -172,8 +175,18 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                     const cls    = isPaid ? "paid" : TASK_CLASS[task.status];
                     const proCategory = CATEGORY_TO_PRO[task.category];
                     const searchUrl   = proCategory ? `/prestataires?category=${proCategory}` : `/prestataires`;
-                    // Si un prestataire est assigné → lien vers le budget, sinon vers la recherche
-                    const targetUrl   = task.proName ? `/carnet/budget` : searchUrl;
+                    // Si un prestataire est assigné → lien vers sa fiche budget, sinon vers la recherche
+                    const budgetEntry = task.proName
+                      ? data.manualEntries.find((e) =>
+                          e.vendorName === task.proName &&
+                          (proCategory ? e.vendorCategory === proCategory : true)
+                        ) ?? data.manualEntries.find((e) => e.vendorName === task.proName)
+                      : null;
+                    const targetUrl = budgetEntry
+                      ? `/carnet/budget/${budgetEntry.id}/modifier`
+                      : task.proName
+                        ? `/carnet/budget`
+                        : searchUrl;
 
                     // Compter favoris et retenu pour cette catégorie
                     const catRels    = proCategory ? relations.filter((r) => r.category === proCategory) : [];
