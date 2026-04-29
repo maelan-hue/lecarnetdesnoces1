@@ -40,31 +40,32 @@ export async function PATCH(req: NextRequest, { params }: P) {
   if (data.depositPaidAt)  data.depositPaidAt  = new Date(data.depositPaidAt as string);
   if (data.balanceDueDate) data.balanceDueDate  = new Date(data.balanceDueDate as string);
 
-  const oldCategory = entry.vendorCategory;
+  const oldName = entry.vendorName;
   const updated = await db.manualVendorEntry.update({ where: { id }, data });
 
-  const newCategory    = updated.vendorCategory;
-  const categoryChanged = oldCategory !== newCategory;
+  // Effacer l'ancien proName sur TOUTES les tâches du couple qui portaient ce nom
+  await db.coupleTask.updateMany({
+    where: { coupleId: session.sub, proName: oldName },
+    data:  { proName: null, quoteTotal: null, status: "TODO" },
+  });
 
-  // Si la catégorie a changé → effacer proName sur l'ancienne tâche
-  if (categoryChanged) {
-    const oldTaskCat = oldCategory.toLowerCase().replace(/_/g, "_");
+  // Mettre à jour la tâche correspondant à la NOUVELLE catégorie
+  // Utilise la correspondance inverse : cherche la clé dans CATEGORY_TO_PRO qui pointe vers vendorCategory
+  const { CATEGORY_TO_PRO } = await import("@/lib/utils");
+  const matchingTaskCats = Object.entries(CATEGORY_TO_PRO)
+    .filter(([, v]) => v === updated.vendorCategory)
+    .map(([k]) => k);
+
+  if (matchingTaskCats.length > 0) {
     await db.coupleTask.updateMany({
-      where: { coupleId: session.sub, category: oldTaskCat },
-      data:  { proName: null, quoteTotal: null, status: "TODO" },
+      where: { coupleId: session.sub, category: { in: matchingTaskCats } },
+      data: {
+        proName:    updated.vendorName,
+        quoteTotal: Math.round(updated.totalAmount / 100),
+        status:     "IN_PROGRESS",
+      },
     });
   }
-
-  // Mettre à jour la tâche de la nouvelle catégorie
-  const newTaskCat = newCategory.toLowerCase().replace(/_/g, "_");
-  await db.coupleTask.updateMany({
-    where: { coupleId: session.sub, category: newTaskCat },
-    data: {
-      proName:    updated.vendorName,
-      quoteTotal: Math.round(updated.totalAmount / 100),
-      status:     "IN_PROGRESS",
-    },
-  });
 
   return NextResponse.json(updated);
 }
@@ -77,6 +78,14 @@ export async function DELETE(_req: NextRequest, { params }: P) {
   const entry = await getEntry(session.sub, id);
   if (!entry) return NextResponse.json({ error: "Introuvable" }, { status: 404 });
 
+  const nameToRemove = entry.vendorName;
   await db.manualVendorEntry.delete({ where: { id } });
+
+  // Effacer le proName sur les tâches qui portaient ce nom
+  await db.coupleTask.updateMany({
+    where: { coupleId: session.sub, proName: nameToRemove },
+    data:  { proName: null, quoteTotal: null, status: "TODO" },
+  });
+
   return NextResponse.json({ ok: true });
 }

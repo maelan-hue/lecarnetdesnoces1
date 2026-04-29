@@ -73,21 +73,22 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  // Mettre à jour la tâche correspondante dans le carnet
-  // La catégorie de la tâche est en minuscules (ex: "photographe" pour "PHOTOGRAPHE")
-  const taskCategory = vendorCategory.toLowerCase().replace(/_/g, "_");
-  await db.coupleTask.updateMany({
-    where: {
-      coupleId: session.sub,
-      category: taskCategory,
-      status:   "TODO",
-    },
-    data: {
-      proName:    vendorName.trim(),
-      quoteTotal: Math.round(Number(totalAmount) / 100), // en euros dans la tâche
-      status:     "IN_PROGRESS",
-    },
-  });
+  // Mettre à jour la tâche correspondante via la correspondance inverse CATEGORY_TO_PRO
+  const { CATEGORY_TO_PRO } = await import("@/lib/utils");
+  const matchingTaskCats = Object.entries(CATEGORY_TO_PRO)
+    .filter(([, v]) => v === vendorCategory)
+    .map(([k]) => k);
+
+  if (matchingTaskCats.length > 0) {
+    await db.coupleTask.updateMany({
+      where: { coupleId: session.sub, category: { in: matchingTaskCats }, status: "TODO" },
+      data: {
+        proName:    vendorName.trim(),
+        quoteTotal: Math.round(Number(totalAmount) / 100),
+        status:     "IN_PROGRESS",
+      },
+    });
+  }
 
   return NextResponse.json(entry, { status: 201 });
 }
