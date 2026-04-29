@@ -99,17 +99,6 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
 
   return (
     <div className="container narrow" style={{ paddingTop:60 }}>
-      <div className="breadcrumb">
-        <Link href="/carnet">Mon carnet</Link>
-        <span className="sep">·</span>
-        <Link href="/carnet/budget">Mon budget</Link>
-        <span className="sep">·</span>
-        <Link href="/carnet/budget/ajouter">Ajouter</Link>
-        <span className="sep">·</span>
-        <span>{mode === "cas-b" ? "Prestataire du Carnet" : "Prestataire externe"}</span>
-      </div>
-
-      <div className="eyebrow" style={{ marginBottom:4 }}>Mon carnet · Saisie manuelle</div>
       <h1 className="page-title" style={{ marginBottom:8 }}>
         {mode === "cas-b"
           ? <>Vos <em>échanges</em> avec {preFilledName}</>
