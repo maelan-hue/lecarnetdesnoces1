@@ -127,12 +127,6 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
           )}
           <span style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)" }}>→</span>
         </Link>
-        {relations.length > 0 && (
-          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.85rem", color:"var(--mute)" }}>
-            {relations.filter((r) => r.status === "RETAINED").length} retenu{relations.filter((r) => r.status === "RETAINED").length > 1 ? "s" : ""} ·{" "}
-            {relations.filter((r) => r.status === "FAVORITE").length} favori{relations.filter((r) => r.status === "FAVORITE").length > 1 ? "s" : ""} en comparaison
-          </span>
-        )}
       </div>
 
       {/* ── PHASES ── */}
