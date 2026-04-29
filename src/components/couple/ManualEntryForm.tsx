@@ -125,13 +125,13 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
         🌿 <strong>Bon à savoir —</strong> Seul le devis total compte dans votre budget global. Les acomptes et soldes vous servent à suivre où vous en êtes des paiements.
       </div>
 
-      {/* Section identité (Cas C uniquement) */}
-      {mode === "cas-c" && (
+      {/* Section identité */}
+      {(mode === "cas-c" || mode === "cas-b") && (
         <div className="form-section" style={{ borderColor:"var(--gold)", borderLeft:"2px solid var(--gold)" }}>
           <h3 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.25rem", fontWeight:500, marginBottom:18 }}>
             Le <em style={{ fontStyle:"italic", color:"var(--gold)" }}>prestataire</em>
           </h3>
-          <label className="field-label">Nom du prestataire (obligatoire)</label>
+          <label className="field-label">Nom du prestataire {mode === "cas-c" ? "(obligatoire)" : ""}</label>
           <input className="input" placeholder="Ex : Atelier Luce" value={vendorName} onChange={(e) => setVendorName(e.target.value)} />
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:14 }}>
             <div>
@@ -145,18 +145,22 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
               <input className="input" placeholder="Ex : Perpignan" value={vendorCity} onChange={(e) => setVendorCity(e.target.value)} />
             </div>
           </div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:14 }}>
-            <div>
-              <label className="field-label">Email</label>
-              <input className="input" type="email" placeholder="contact@…" value={vendorEmail} onChange={(e) => setVendorEmail(e.target.value)} />
-            </div>
-            <div>
-              <label className="field-label">Téléphone</label>
-              <input className="input" placeholder="+33 6…" value={vendorPhone} onChange={(e) => setVendorPhone(e.target.value)} />
-            </div>
-          </div>
-          <label className="field-label">Site web ou Instagram (optionnel)</label>
-          <input className="input" placeholder="atelierluce.fr ou @atelierluce" value={vendorWebsite} onChange={(e) => setVendorWebsite(e.target.value)} />
+          {mode === "cas-c" && (
+            <>
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:14 }}>
+                <div>
+                  <label className="field-label">Email</label>
+                  <input className="input" type="email" placeholder="contact@…" value={vendorEmail} onChange={(e) => setVendorEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="field-label">Téléphone</label>
+                  <input className="input" placeholder="+33 6…" value={vendorPhone} onChange={(e) => setVendorPhone(e.target.value)} />
+                </div>
+              </div>
+              <label className="field-label">Site web ou Instagram (optionnel)</label>
+              <input className="input" placeholder="atelierluce.fr ou @atelierluce" value={vendorWebsite} onChange={(e) => setVendorWebsite(e.target.value)} />
+            </>
+          )}
         </div>
       )}
 

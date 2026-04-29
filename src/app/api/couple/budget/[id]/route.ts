@@ -41,6 +41,19 @@ export async function PATCH(req: NextRequest, { params }: P) {
   if (data.balanceDueDate) data.balanceDueDate  = new Date(data.balanceDueDate as string);
 
   const updated = await db.manualVendorEntry.update({ where: { id }, data });
+
+  // Synchroniser la tâche du carnet si le nom ou le montant change
+  if (data.vendorName || data.totalAmount) {
+    const taskCategory = (updated.vendorCategory).toLowerCase().replace(/_/g, "_");
+    await db.coupleTask.updateMany({
+      where: { coupleId: session.sub, category: taskCategory },
+      data: {
+        ...(data.vendorName ? { proName: updated.vendorName } : {}),
+        ...(data.totalAmount ? { quoteTotal: Math.round(updated.totalAmount / 100) } : {}),
+      },
+    });
+  }
+
   return NextResponse.json(updated);
 }
 
