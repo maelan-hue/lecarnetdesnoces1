@@ -72,14 +72,7 @@ export default function BudgetClient({ data }: { data: Data }) {
 
   return (
     <div className="container">
-      <div className="breadcrumb">
-        <Link href="/carnet">Mon carnet</Link>
-        <span className="sep">·</span>
-        <span>Mon budget</span>
-      </div>
-
       <div className="page-head">
-        <div className="eyebrow">Mon carnet · Suivi budgétaire</div>
         <h1 className="page-title">Votre <em>budget</em></h1>
         <p className="page-sub">Tous vos prestataires, retenus ou réglés, en un seul endroit.</p>
       </div>
