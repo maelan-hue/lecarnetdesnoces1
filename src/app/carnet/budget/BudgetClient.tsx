@@ -36,8 +36,27 @@ const fmt = (cents: number) => (cents / 100).toLocaleString("fr-FR", { minimumFr
 
 export default function BudgetClient({ data }: { data: Data }) {
   const router = useRouter();
-  const [entries, setEntries] = useState(data.manual);
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [entries,       setEntries]       = useState(data.manual);
+  const [deleting,      setDeleting]      = useState<string | null>(null);
+  const [editBudget,    setEditBudget]    = useState(false);
+  const [budgetInput,   setBudgetInput]   = useState(data.budgetEstimate ? String(data.budgetEstimate) : "");
+  const [budgetVal,     setBudgetVal]     = useState(data.budgetEstimate ? data.budgetEstimate * 100 : null);
+  const [savingBudget,  setSavingBudget]  = useState(false);
+
+  const saveBudget = async () => {
+    const val = parseInt(budgetInput) || 0;
+    if (val <= 0) { setEditBudget(false); return; }
+    setSavingBudget(true);
+    await fetch("/api/couple/profile", {
+      method:  "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({ budgetEstimate: val }),
+    });
+    setBudgetVal(val * 100);
+    setSavingBudget(false);
+    setEditBudget(false);
+    router.refresh();
+  };
 
   // Calculs globaux
   const allDevis = [
@@ -52,7 +71,7 @@ export default function BudgetClient({ data }: { data: Data }) {
   const totalEngage = allDevis.reduce((s, v) => s + v, 0);
   const totalVerse  = allVerse.reduce((s, v) => s + v, 0);
   const totalReste  = totalEngage - totalVerse;
-  const budget      = data.budgetEstimate ? data.budgetEstimate * 100 : null;
+  const budget      = budgetVal;
   const marge       = budget ? budget - totalEngage : null;
   const pct         = budget && budget > 0 ? Math.min(100, Math.round(totalEngage / budget * 100)) : 0;
 
@@ -82,9 +101,37 @@ export default function BudgetClient({ data }: { data: Data }) {
         <div className="eyebrow" style={{ color:"var(--gold)" }}>Vue d&apos;ensemble</div>
         <div className="budget-grid">
           <div>
-            <div className="budget-cell-lbl">Budget prévisionnel</div>
-            <div className="budget-cell-val">{budget ? fmt(budget) : "—"}</div>
-            <div className="budget-cell-sub">défini à l&apos;inscription</div>
+            <div style={{ display:"flex", alignItems:"center", gap:6, marginBottom:6 }}>
+              <span className="budget-cell-lbl" style={{ marginBottom:0 }}>Budget prévisionnel</span>
+              <button
+                onClick={() => setEditBudget(true)}
+                title="Modifier"
+                style={{ background:"none", border:"none", cursor:"pointer", color:"var(--taupe)", fontSize:"0.75rem", padding:"2px 4px", lineHeight:1, transition:"color 0.2s" }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--gold)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--taupe)")}
+              >✎</button>
+            </div>
+            {editBudget ? (
+              <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                <input
+                  type="number"
+                  min={1}
+                  value={budgetInput}
+                  onChange={(e) => setBudgetInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") saveBudget(); if (e.key === "Escape") setEditBudget(false); }}
+                  autoFocus
+                  style={{ width:100, fontFamily:"'Cormorant Garamond',serif", fontSize:"1.4rem", color:"var(--gold)", background:"transparent", border:"none", borderBottom:"1px solid var(--gold)", outline:"none", padding:"2px 0" }}
+                />
+                <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", color:"var(--gold)" }}>€</span>
+                <button className="btn gold small" onClick={saveBudget} disabled={savingBudget} style={{ fontSize:"0.55rem", padding:"4px 10px" }}>
+                  {savingBudget ? "…" : "✓"}
+                </button>
+                <button onClick={() => setEditBudget(false)} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--mute)", fontSize:"0.8rem" }}>✕</button>
+              </div>
+            ) : (
+              <div className="budget-cell-val">{budget ? fmt(budget) : "—"}</div>
+            )}
+            <div className="budget-cell-sub">{editBudget ? "Appuyez sur Entrée pour valider" : "modifiable"}</div>
           </div>
           <div>
             <div className="budget-cell-lbl">Engagé (devis)</div>
