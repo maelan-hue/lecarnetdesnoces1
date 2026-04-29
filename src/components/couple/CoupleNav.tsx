@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/invites",          label: "Invités",      unread: false },
   { href: "/prestataires",     label: "Prestataires", unread: false },
   { href: "/carnet/cagnotte",  label: "Cagnotte",     unread: false },
+  { href: "/carnet/budget",    label: "Budget",       unread: false },
   { href: "/messages",         label: "Messages",     unread: true  },
   { href: "/compte",           label: "Mon compte",   unread: false },
 ];

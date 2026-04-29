@@ -82,10 +82,15 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
           </h1>
           <p className="carnet-sub">Votre carnet se tisse au fil de vos choix.</p>
         </div>
-        <div className="budget-card">
-          <div className="budget-lbl">Budget engagé</div>
-          <div className="budget-val">{budgetEngageEuros.toLocaleString("fr-FR")} €</div>
-        </div>
+        <Link href="/carnet/budget" style={{ textDecoration:"none" }}>
+          <div className="budget-card" style={{ cursor:"pointer", transition:"border-color 0.2s" }}
+            onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--gold)")}
+            onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--bone)")}
+          >
+            <div className="budget-lbl">Budget engagé →</div>
+            <div className="budget-val">{budgetEngageEuros.toLocaleString("fr-FR")} €</div>
+          </div>
+        </Link>
       </div>
 
       {/* ── COUNTDOWN / DATE EDITOR ── */}
