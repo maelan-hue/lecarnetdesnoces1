@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import BudgetSlot from "./BudgetSlot";
 
 type Props = {
   weddingDate:    string | null;
@@ -109,7 +108,6 @@ export default function DateEditor({
               <span className="cd-l">Invités →</span>
             </div>
           </a>
-          <BudgetSlot budgetEstimate={budgetEstimate} />
         </div>
       </>
     );
