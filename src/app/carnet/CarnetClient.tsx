@@ -183,14 +183,6 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
 
                     return (
                       <div key={task.id}>
-                        {/* Mini-accordéon favoris inline */}
-                        {catRels.length > 0 && (
-                          <InlineFavorites
-                            category={proCategory!}
-                            catLabel={PRO_CATEGORIES[proCategory!] ?? task.title}
-                            relations={catRels}
-                          />
-                        )}
                         <div className={`task clickable ${cls}`} onClick={() => router.push(searchUrl)}>
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
@@ -217,6 +209,14 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                           )}
                         </div>
                         </div>{/* fin task */}
+                        {/* Mini-accordéon favoris inline — sous la catégorie */}
+                        {catRels.length > 0 && (
+                          <InlineFavorites
+                            category={proCategory!}
+                            catLabel={PRO_CATEGORIES[proCategory!] ?? task.title}
+                            relations={catRels}
+                          />
+                        )}
                       </div>
                     );
                   })}
