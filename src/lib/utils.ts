@@ -33,21 +33,27 @@ export function daysUntil(date: Date | string): number {
 }
 
 export const PRO_CATEGORIES: Record<string, string> = {
-  PHOTOGRAPHE: "Photographe",
-  VIDEASTE: "Vidéaste",
-  TRAITEUR: "Traiteur",
-  LIEU: "Lieu de réception",
-  FLEURISTE: "Fleuriste",
-  DJ_MUSICIEN: "DJ / Musicien",
-  OFFICIANT: "Officiant laïc",
+  PHOTOGRAPHE:         "Photographe",
+  VIDEASTE:            "Vidéaste",
+  TRAITEUR:            "Traiteur",
+  LIEU:                "Lieu de réception",
+  FLEURISTE:           "Fleuriste",
+  DJ_MUSICIEN:         "DJ / Musicien",
+  OFFICIANT:           "Officiant laïc",
   COIFFURE_MAQUILLAGE: "Coiffure & maquillage",
-  DECORATION_PAPETERIE: "Décoration / Papeterie",
-  WEDDING_PLANNER:  "Wedding planner",
-  VINS_CHAMPAGNE:   "Vins & champagne",
-  AUTRE:            "Autre",
+  DECORATION_PAPETERIE:"Décoration / Papeterie",
+  WEDDING_PLANNER:     "Wedding planner",
+  VINS_CHAMPAGNE:      "Vins & champagne",
+  VOITURE_TRANSPORT:   "Voiture / Transport",
+  ROBE_COSTUME:        "Robe & Costume",
+  PHOTOBOOTH:          "Photobooth",
+  ONGLES_MANUCURE:     "Ongles / Manucure",
+  GOODIES_INVITES:     "Goodies invités",
+  SOINS_PRE_MARIAGE:   "Soins pré-mariage",
+  AUTRE:               "Autre",
 };
 
-// Correspondance category tâche (ex: "photographe") → ProCategory enum (ex: "PHOTOGRAPHE")
+// Correspondance category tâche → ProCategory enum
 export const CATEGORY_TO_PRO: Record<string, string> = {
   lieu:            "LIEU",
   traiteur:        "TRAITEUR",
@@ -61,6 +67,11 @@ export const CATEGORY_TO_PRO: Record<string, string> = {
   officiant:       "OFFICIANT",
   wedding_planner: "WEDDING_PLANNER",
   boissons:        "VINS_CHAMPAGNE",
+  voiture:         "VOITURE_TRANSPORT",
+  ongles:          "ONGLES_MANUCURE",
+  soins:           "SOINS_PRE_MARIAGE",
+  goodies:         "GOODIES_INVITES",
+  photobooth:      "PHOTOBOOTH",
 };
 
 export const AMBIANCES: Record<string, string> = {

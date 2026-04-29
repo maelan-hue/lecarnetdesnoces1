@@ -67,6 +67,12 @@ model Pro {
   portfolioPhotos String[]
   calendarActive  Boolean @default(false)
 
+  // Fiche enrichie
+  specs         Json?    // champs structurés par catégorie
+  highlightText String?  // "Le plus" affiché dans l'aside
+  ctaLabel      String?  // label du bouton CTA or (ex: "Voir le portfolio")
+  ctaUrl        String?  // URL du CTA (site, SoundCloud, mix…)
+
   tarifs        ProTarif[]
   availability  ProAvailability[]
   conversations Conversation[]
@@ -97,6 +103,12 @@ enum ProCategory {
   DECORATION_PAPETERIE
   WEDDING_PLANNER
   VINS_CHAMPAGNE
+  VOITURE_TRANSPORT
+  ROBE_COSTUME
+  PHOTOBOOTH
+  ONGLES_MANUCURE
+  GOODIES_INVITES
+  SOINS_PRE_MARIAGE
   AUTRE
 }
 

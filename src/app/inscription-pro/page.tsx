@@ -14,6 +14,12 @@ const CATEGORIES = [
   { value: "DECORATION_PAPETERIE",label: "Décoration / Papeterie" },
   { value: "WEDDING_PLANNER",     label: "Wedding planner" },
   { value: "VINS_CHAMPAGNE",      label: "Vins & champagne" },
+  { value: "VOITURE_TRANSPORT",   label: "Voiture / Transport" },
+  { value: "ROBE_COSTUME",        label: "Robe & Costume" },
+  { value: "PHOTOBOOTH",          label: "Photobooth" },
+  { value: "ONGLES_MANUCURE",     label: "Ongles / Manucure" },
+  { value: "GOODIES_INVITES",     label: "Goodies invités" },
+  { value: "SOINS_PRE_MARIAGE",   label: "Soins pré-mariage" },
   { value: "AUTRE",               label: "Autre" },
 ];
 
