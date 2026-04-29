@@ -133,9 +133,6 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       <div className="section-title" style={{ marginBottom: 6 }}>
         Votre <em style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", color: "var(--gold)" }}>parcours</em>
       </div>
-      <p className="section-hint">
-        Généré selon votre date et vos ambiances · {data.phases.length} phases · {data.totalTasks} étapes
-      </p>
 
       <div className="phases">
         {data.phases.map((phase) => {
