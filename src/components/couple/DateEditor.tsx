@@ -2,19 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import BudgetSlot from "./BudgetSlot";
 
 type Props = {
-  weddingDate:  string | null;
-  weddingCity:  string | null;
-  weddingVenue: string | null;
-  guestCount:   number | null;
-  days:         number | null;
-  months:       number | null;
-  guestTotal:   number;
+  weddingDate:    string | null;
+  weddingCity:    string | null;
+  weddingVenue:   string | null;
+  guestCount:     number | null;
+  days:           number | null;
+  months:         number | null;
+  guestTotal:     number;
+  budgetEstimate: number | null;
 };
 
 export default function DateEditor({
-  weddingDate, weddingCity, weddingVenue, guestCount, days, months, guestTotal,
+  weddingDate, weddingCity, weddingVenue, guestCount, days, months, guestTotal, budgetEstimate,
 }: Props) {
   const router   = useRouter();
   const [editing, setEditing] = useState(false);
@@ -99,7 +101,7 @@ export default function DateEditor({
           <button className="btn gold small">Ajouter une date →</button>
         </div>
 
-        {/* Compteur invités même sans date */}
+        {/* Compteur invités + budget même sans date */}
         <div className="countdown" style={{ marginBottom:32 }}>
           <a href="/invites" style={{ textDecoration:"none" }}>
             <div className="cd" style={{ cursor:"pointer" }}>
@@ -107,6 +109,7 @@ export default function DateEditor({
               <span className="cd-l">Invités →</span>
             </div>
           </a>
+          <BudgetSlot budgetEstimate={budgetEstimate} />
         </div>
       </>
     );
@@ -138,6 +141,7 @@ export default function DateEditor({
             <span className="cd-l">Invités →</span>
           </div>
         </a>
+        <BudgetSlot budgetEstimate={budgetEstimate} />
         <button
           onClick={() => setEditing(true)}
           style={{

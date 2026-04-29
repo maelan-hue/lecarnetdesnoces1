@@ -97,6 +97,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
         days={data.days}
         months={data.months}
         guestTotal={data.guestTotal}
+        budgetEstimate={data.budgetEstimate}
       />
 
       {/* ── BOUTON MES FAVORIS ── */}

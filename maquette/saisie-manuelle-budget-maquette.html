@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saisie manuelle &amp; Budget · Le Carnet des noces</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF8F4; --ivory: #F2ECE1; --bone: #D4C9B3;
+    --taupe: #8A7B63; --ink: #1A1510; --gold: #A8833B;
+    --terracotta: #B0604A; --sage: #7A8B6E; --mute: #6B6356;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--ivory); color: var(--ink); font-family: 'Jost', sans-serif; font-weight: 300; }
+
+  .nav-bar { position: sticky; top: 0; z-index: 100; background: var(--ink); color: var(--paper); padding: 14px 24px; display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--gold); }
+  .nav-tab { background: transparent; color: var(--paper); border: 1px solid transparent; padding: 8px 18px; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .nav-tab:hover { border-color: var(--gold); }
+  .nav-tab.active { background: var(--gold); border-color: var(--gold); }
+  .nav-label { font-size: 0.6rem; color: var(--taupe); letter-spacing: 0.22em; padding: 0 10px; align-self: center; }
+
+  .screen { display: none; padding: 30px; max-width: 920px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  .eyebrow { font-family: 'Jost', sans-serif; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); font-weight: 500; }
+  .h1-ed { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 400; line-height: 1.15; margin: 8px 0 4px; }
+  .h1-ed em { font-style: italic; color: var(--gold); }
+  .h2-ed { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 500; margin-bottom: 12px; }
+  .h2-ed em { font-style: italic; color: var(--gold); }
+  .body-ed { font-family: 'Cormorant Garamond', serif; font-size: 1rem; line-height: 1.7; }
+  .muted { color: var(--mute); font-style: italic; }
+
+  .btn-gold { background: var(--gold); color: var(--paper); border: none; padding: 12px 24px; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; }
+  .btn-gold:hover { opacity: 0.9; }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--taupe); padding: 10px 18px; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; }
+
+  .field-label { font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--taupe); font-weight: 500; margin-bottom: 8px; display: block; }
+  .input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--bone); padding: 10px 0; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); outline: none; }
+  .input:focus { border-bottom-color: var(--gold); }
+  .textarea { width: 100%; border: 1px solid var(--bone); padding: 12px 14px; font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; line-height: 1.5; resize: vertical; background: var(--paper); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 580px) { .form-row-2 { grid-template-columns: 1fr; } }
+  .form-field { margin-bottom: 18px; }
+
+  .breadcrumb { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.92rem; color: var(--mute); margin-bottom: 14px; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .form-section { background: var(--paper); border: 1px solid var(--bone); padding: 28px 30px; margin-bottom: 20px; }
+  .form-section.gold { border-color: var(--gold); border-left: 2px solid var(--gold); }
+
+  .tip-box { background: var(--ivory); border-left: 2px solid var(--gold); padding: 14px 18px; margin-bottom: 24px; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.92rem; color: var(--ink); line-height: 1.55; }
+  .tip-box strong { color: var(--gold); font-style: normal; font-weight: 500; }
+
+  .summary-box { background: var(--ivory); padding: 20px 24px; border-left: 2px solid var(--gold); margin-bottom: 20px; }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-family: 'Cormorant Garamond', serif; }
+  .summary-row.total { font-size: 1.3rem; font-weight: 500; padding-top: 12px; border-top: 1px solid var(--bone); margin-top: 6px; }
+  .summary-row.total em { color: var(--gold); font-style: italic; }
+
+  .upload-zone {
+    border: 1px dashed var(--bone); padding: 16px 18px;
+    background: var(--paper); display: flex; align-items: center; gap: 14px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: var(--gold); }
+  .upload-icon { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.6rem; color: var(--gold); }
+  .upload-text { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.92rem; }
+
+  .status-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .status-chip { background: transparent; border: 1px solid var(--bone); padding: 6px 14px; font-family: 'Cormorant Garamond', serif; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; }
+  .status-chip:hover { border-color: var(--taupe); }
+  .status-chip.active { background: var(--gold); color: var(--paper); border-color: var(--gold); }
+
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--bone); }
+
+  /* ===== ÉCRAN BUDGET ===== */
+  .budget-summary {
+    background: var(--paper); border: 1px solid var(--gold);
+    border-left: 3px solid var(--gold); padding: 28px 32px;
+    margin-bottom: 28px;
+  }
+  .budget-summary-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+    margin-top: 18px;
+  }
+  @media (max-width: 720px) { .budget-summary-grid { grid-template-columns: repeat(2, 1fr); } }
+  .budget-summary-cell { text-align: left; }
+  .budget-cell-label { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--taupe); font-weight: 500; margin-bottom: 6px; }
+  .budget-cell-value { font-family: 'Cormorant Garamond', serif; font-size: 1.8rem; line-height: 1; color: var(--ink); }
+  .budget-cell-value.gold { color: var(--gold); font-style: italic; }
+  .budget-cell-sub { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.82rem; color: var(--mute); margin-top: 4px; }
+
+  .budget-bar-wrap {
+    background: var(--ivory); padding: 16px 20px; margin-top: 20px;
+    border: 0.5px solid var(--bone);
+  }
+  .budget-bar-bg {
+    height: 8px; background: var(--bone); border-radius: 4px; overflow: hidden;
+    margin-top: 10px;
+  }
+  .budget-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--terracotta));
+    border-radius: 4px;
+  }
+  .budget-bar-legend { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.78rem; color: var(--mute); font-family: 'Cormorant Garamond', serif; font-style: italic; }
+
+  /* Liste des prestataires retenus */
+  .vendor-list { display: flex; flex-direction: column; gap: 8px; }
+  .vendor-row {
+    background: var(--paper); border: 1px solid var(--bone);
+    padding: 18px 22px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr 80px;
+    gap: 16px; align-items: center;
+  }
+  @media (max-width: 720px) {
+    .vendor-row { grid-template-columns: 1fr; gap: 8px; }
+  }
+  .vendor-row.manual { border-left: 2px solid var(--gold); }
+  .vendor-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 500; }
+  .vendor-cat { font-family: 'Jost', sans-serif; font-size: 0.66rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--taupe); font-weight: 500; }
+  .badge-manual {
+    display: inline-block; background: rgba(168,131,59,0.12);
+    color: var(--gold); padding: 2px 8px;
+    font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase;
+    margin-left: 8px; vertical-align: middle; font-weight: 500;
+    font-family: 'Jost', sans-serif;
+  }
+  .vendor-amount {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 1.1rem; color: var(--gold);
+  }
+  .vendor-status {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    font-size: 0.85rem; color: var(--mute);
+  }
+
+  /* Section par catégorie */
+  .cat-section { margin-bottom: 28px; }
+  .cat-section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--bone);
+  }
+  .cat-name { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 500; }
+  .cat-name em { font-style: italic; color: var(--gold); }
+  .cat-total { font-family: 'Cormorant Garamond', serif; font-size: 1rem; color: var(--taupe); }
+
+  /* CTA d'ajout manuel en bas */
+  .add-cta-zone {
+    margin-top: 30px; padding: 24px; background: var(--paper);
+    border: 1px dashed var(--bone);
+    text-align: center;
+  }
+
+  /* Choix bifurcation cas B vs C */
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  @media (max-width: 720px) { .choice-grid { grid-template-columns: 1fr; } }
+  .choice-card {
+    background: var(--paper); border: 1px solid var(--bone);
+    padding: 28px 26px; cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .choice-card:hover { border-color: var(--gold); }
+  .choice-icon { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 2rem; color: var(--gold); margin-bottom: 6px; }
+  .choice-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 500; line-height: 1.3; }
+  .choice-title em { font-style: italic; color: var(--gold); }
+  .choice-desc { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.92rem; line-height: 1.5; flex-grow: 1; }
+  .choice-arrow { font-family: 'Cormorant Garamond', serif; color: var(--gold); margin-top: 12px; font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="nav-bar">
+  <span class="nav-label">Saisie manuelle &amp; budget</span>
+  <button class="nav-tab active" data-s="budget">Budget global</button>
+  <button class="nav-tab" data-s="cas-b">Saisie · Cas B (plateforme · paiement direct)</button>
+  <button class="nav-tab" data-s="cas-c">Saisie · Cas C (hors plateforme)</button>
+  <button class="nav-tab" data-s="bifurcation">Choix Cas B / C</button>
+</div>
+
+
+<!-- ════════════ ÉCRAN BUDGET GLOBAL ════════════ -->
+<div class="screen active" id="s-budget">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <span>Mon budget</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Suivi budgétaire</div>
+  <h1 class="h1-ed">Votre <em>budget</em></h1>
+  <p class="muted body-ed" style="margin-bottom: 28px;">Tous vos prestataires, retenus ou réglés, en un seul endroit. Le suivi se met à jour en temps réel.</p>
+
+  <!-- Récap global -->
+  <div class="budget-summary">
+    <div class="eyebrow" style="color: var(--gold);">Vue d'ensemble</div>
+    <div class="budget-summary-grid">
+      <div class="budget-summary-cell">
+        <div class="budget-cell-label">Budget prévisionnel</div>
+        <div class="budget-cell-value">25 000 €</div>
+        <div class="budget-cell-sub">défini à l'inscription</div>
+      </div>
+      <div class="budget-summary-cell">
+        <div class="budget-cell-label">Engagé (devis)</div>
+        <div class="budget-cell-value gold">18 240 €</div>
+        <div class="budget-cell-sub">8 prestataires retenus</div>
+      </div>
+      <div class="budget-summary-cell">
+        <div class="budget-cell-label">Déjà versé</div>
+        <div class="budget-cell-value">7 020 €</div>
+        <div class="budget-cell-sub">acomptes &amp; soldes</div>
+      </div>
+      <div class="budget-summary-cell">
+        <div class="budget-cell-label">Reste à régler</div>
+        <div class="budget-cell-value">11 220 €</div>
+        <div class="budget-cell-sub">sur engagements actuels</div>
+      </div>
+    </div>
+
+    <div class="budget-bar-wrap">
+      <div class="eyebrow">Engagement total · 18 240 € sur 25 000 €</div>
+      <div class="budget-bar-bg"><div class="budget-bar-fill" style="width: 73%;"></div></div>
+      <div class="budget-bar-legend">
+        <span>73 % engagés</span>
+        <span>6 760 € de marge</span>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Liste par catégorie -->
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name"><em>Lieu</em> de réception</div>
+      <div class="cat-total">3 500 €</div>
+    </div>
+    <div class="vendor-list">
+      <div class="vendor-row">
+        <div>
+          <div class="vendor-cat">Lieu de réception</div>
+          <div class="vendor-name">Domaine de la Tuilerie</div>
+        </div>
+        <div class="vendor-status">Acompte versé · Stripe</div>
+        <div class="vendor-amount">3 500 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Détail</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name"><em>Traiteur</em></div>
+      <div class="cat-total">8 400 €</div>
+    </div>
+    <div class="vendor-list">
+      <div class="vendor-row manual">
+        <div>
+          <div class="vendor-cat">Traiteur</div>
+          <div class="vendor-name">Maison Cazals <span class="badge-manual">Saisi manuellement</span></div>
+        </div>
+        <div class="vendor-status">Acompte 2 800 € versé · chèque</div>
+        <div class="vendor-amount">8 400 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Modifier</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name"><em>Photographe</em></div>
+      <div class="cat-total">2 400 €</div>
+    </div>
+    <div class="vendor-list">
+      <div class="vendor-row">
+        <div>
+          <div class="vendor-cat">Photographe</div>
+          <div class="vendor-name">Studio Mila &amp; Jules</div>
+        </div>
+        <div class="vendor-status">Acompte versé · Stripe</div>
+        <div class="vendor-amount">2 400 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Détail</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name"><em>Robe</em> &amp; costume</div>
+      <div class="cat-total">2 200 €</div>
+    </div>
+    <div class="vendor-list">
+      <div class="vendor-row manual">
+        <div>
+          <div class="vendor-cat">Robe</div>
+          <div class="vendor-name">Atelier Luce <span class="badge-manual">Hors plateforme</span></div>
+        </div>
+        <div class="vendor-status">Acompte 600 € versé</div>
+        <div class="vendor-amount">1 800 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Modifier</button>
+      </div>
+      <div class="vendor-row manual">
+        <div>
+          <div class="vendor-cat">Costume</div>
+          <div class="vendor-name">Le Tailleur Bleu <span class="badge-manual">Hors plateforme</span></div>
+        </div>
+        <div class="vendor-status">Soldé · espèces</div>
+        <div class="vendor-amount">400 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Modifier</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name"><em>Fleuriste</em></div>
+      <div class="cat-total">1 740 €</div>
+    </div>
+    <div class="vendor-list">
+      <div class="vendor-row manual">
+        <div>
+          <div class="vendor-cat">Fleuriste</div>
+          <div class="vendor-name">Atelier Camélia <span class="badge-manual">Saisi manuellement</span></div>
+        </div>
+        <div class="vendor-status">Devis · pas encore d'acompte</div>
+        <div class="vendor-amount">1 740 €</div>
+        <button class="btn-ghost" style="padding: 6px 14px;">Modifier</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA pour ajouter -->
+  <div class="add-cta-zone">
+    <div class="eyebrow" style="margin-bottom: 8px;">Ajouter une prestation à votre budget</div>
+    <p class="body-ed muted" style="margin-bottom: 16px; font-size: 0.95rem;">Vous avez retenu un prestataire ou réservé en direct ? Ajoutez-le pour suivre votre budget complet.</p>
+    <button class="btn-gold" onclick="showScreen('bifurcation')">+ Ajouter une prestation</button>
+  </div>
+
+</div>
+
+
+<!-- ════════════ BIFURCATION CAS B vs C ════════════ -->
+<div class="screen" id="s-bifurcation">
+
+  <div class="breadcrumb">
+    <a onclick="showScreen('budget')">Mon budget</a> · <span>Ajouter une prestation</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Ajouter une prestation</div>
+  <h1 class="h1-ed">Quelle <em>situation</em> ?</h1>
+  <p class="muted body-ed">Choisissez la situation qui correspond à votre prestataire pour que nous adaptions la saisie.</p>
+
+  <div class="choice-grid">
+
+    <div class="choice-card" onclick="showScreen('cas-b')">
+      <div class="choice-icon">§</div>
+      <div class="choice-title">Prestataire <em>du Carnet</em>,<br>réglé en direct</div>
+      <div class="choice-desc">Vous avez choisi un prestataire référencé sur Le Carnet, mais vous le payez par chèque, virement ou espèces — pas via la plateforme.</div>
+      <div class="choice-arrow">Saisir →</div>
+    </div>
+
+    <div class="choice-card" onclick="showScreen('cas-c')">
+      <div class="choice-icon">✦</div>
+      <div class="choice-title">Prestataire <em>hors plateforme</em></div>
+      <div class="choice-desc">Vous avez trouvé un prestataire qui n'est pas sur Le Carnet — par bouche-à-oreille, sur Instagram, par votre famille. Saisissez-le manuellement pour le suivre dans votre budget.</div>
+      <div class="choice-arrow">Saisir →</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ════════════ CAS B · PRESTATAIRE PLATEFORME, PAIEMENT DIRECT ════════════ -->
+<div class="screen" id="s-cas-b">
+
+  <div class="breadcrumb">
+    <a onclick="showScreen('budget')">Mon budget</a> · <a onclick="showScreen('bifurcation')">Ajouter</a> · <span>Atelier Camélia · saisie</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Saisie manuelle d'une prestation</div>
+  <h1 class="h1-ed">Vos <em>échanges</em> avec Atelier Camélia</h1>
+  <p class="muted body-ed" style="margin-bottom: 24px;">Vous payez Atelier Camélia en direct (chèque, virement ou espèces). Ces informations restent privées et alimentent votre budget.</p>
+
+  <div class="tip-box">
+    🌿 <strong>Bon à savoir —</strong> Seul le devis total compte dans votre budget global. Les acomptes et soldes vous servent à suivre où vous en êtes des paiements.
+  </div>
+
+  <!-- Section Devis -->
+  <div class="form-section gold">
+    <h2 class="h2-ed">Le <em>devis</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Devis total TTC</label>
+        <input type="text" class="input" placeholder="Ex : 1 740 €" value="1 740 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de prestation</label>
+        <input type="text" class="input" value="12 juin 2027">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Statut de la réservation</label>
+      <div class="status-chips">
+        <span class="status-chip">En discussion</span>
+        <span class="status-chip active">Devis reçu</span>
+        <span class="status-chip">Acompte versé</span>
+        <span class="status-chip">Soldé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Paiements -->
+  <div class="form-section">
+    <h2 class="h2-ed">Vos <em>paiements</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Acompte versé</label>
+        <input type="text" class="input" placeholder="Ex : 522 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de versement</label>
+        <input type="text" class="input" placeholder="JJ / MM / AAAA">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Solde restant</label>
+        <input type="text" class="input" placeholder="Calculé automatiquement" disabled value="1 218 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de solde prévue</label>
+        <input type="text" class="input" placeholder="Ex : 1 mois avant le mariage">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Mode de paiement</label>
+      <div class="status-chips">
+        <span class="status-chip">Chèque</span>
+        <span class="status-chip active">Virement</span>
+        <span class="status-chip">Espèces</span>
+        <span class="status-chip">Autre</span>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Preuve de paiement (optionnel)</label>
+      <div class="upload-zone">
+        <span class="upload-icon">⬆</span>
+        <div class="upload-text">Glissez une photo de chèque, RIB ou justificatif · ou cliquez pour choisir</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="form-section">
+    <h2 class="h2-ed">Notes <em>privées</em></h2>
+    <div class="form-field">
+      <label class="field-label">Vos notes (visibles uniquement par vous)</label>
+      <textarea class="textarea" rows="3" placeholder="Ex : RDV essai bouquet le 15 mars · livraison le 11 juin à 9h"></textarea>
+    </div>
+  </div>
+
+  <!-- Récap -->
+  <div class="summary-box">
+    <div class="eyebrow" style="color: var(--gold); margin-bottom: 10px;">Impact sur votre budget</div>
+    <div class="summary-row">
+      <span class="muted">Catégorie</span>
+      <span>Fleuriste</span>
+    </div>
+    <div class="summary-row">
+      <span class="muted">Devis total</span>
+      <span>1 740 €</span>
+    </div>
+    <div class="summary-row total">
+      <span>Ajouté à votre budget</span>
+      <span><em>1 740 €</em></span>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn-gold" onclick="showScreen('budget')">Enregistrer</button>
+    <button class="btn-ghost" onclick="showScreen('bifurcation')">Annuler</button>
+  </div>
+
+</div>
+
+
+<!-- ════════════ CAS C · PRESTATAIRE HORS PLATEFORME ════════════ -->
+<div class="screen" id="s-cas-c">
+
+  <div class="breadcrumb">
+    <a onclick="showScreen('budget')">Mon budget</a> · <a onclick="showScreen('bifurcation')">Ajouter</a> · <span>Nouveau prestataire externe</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Saisie d'un prestataire externe</div>
+  <h1 class="h1-ed">Ajouter <em>un prestataire</em></h1>
+  <p class="muted body-ed" style="margin-bottom: 24px;">Saisissez les informations du prestataire que vous avez choisi en dehors du Carnet. Toutes les informations restent privées.</p>
+
+  <div class="tip-box">
+    🌿 <strong>Bon à savoir —</strong> Toutes les informations sont optionnelles sauf le nom et le devis total. Vous pourrez compléter au fur et à mesure.
+  </div>
+
+  <!-- Identité -->
+  <div class="form-section gold">
+    <h2 class="h2-ed">Le <em>prestataire</em></h2>
+
+    <div class="form-field">
+      <label class="field-label">Nom du prestataire (obligatoire)</label>
+      <input type="text" class="input" placeholder="Ex : Atelier Luce">
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Catégorie (obligatoire)</label>
+        <select class="input" style="border-bottom: 1px solid var(--bone);">
+          <option>Choisissez...</option>
+          <option>Lieu de réception</option>
+          <option>Photographe</option>
+          <option>Traiteur</option>
+          <option>Fleuriste</option>
+          <option>DJ / Musicien</option>
+          <option>Vidéaste</option>
+          <option>Officiant laïc</option>
+          <option>Coiffure &amp; maquillage</option>
+          <option>Décoration / Papeterie</option>
+          <option>Wedding planner</option>
+          <option>Voiture / Transport</option>
+          <option>Robe &amp; Costume</option>
+          <option>Photobooth</option>
+          <option>Ongles / Manucure</option>
+          <option>Goodies invités</option>
+          <option>Soins pré-mariage</option>
+          <option>Vin &amp; Champagne</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Ville</label>
+        <input type="text" class="input" placeholder="Ex : Perpignan">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Email</label>
+        <input type="text" class="input" placeholder="contact@…">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Téléphone</label>
+        <input type="text" class="input" placeholder="+33 6 ..">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Site web ou Instagram (optionnel)</label>
+      <input type="text" class="input" placeholder="atelierluce.fr ou @atelierluce">
+    </div>
+  </div>
+
+  <!-- Devis -->
+  <div class="form-section gold">
+    <h2 class="h2-ed">Le <em>devis</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Devis total TTC (obligatoire)</label>
+        <input type="text" class="input" placeholder="Ex : 1 800 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de prestation</label>
+        <input type="text" class="input" placeholder="JJ / MM / AAAA">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Statut de la réservation</label>
+      <div class="status-chips">
+        <span class="status-chip active">En discussion</span>
+        <span class="status-chip">Devis reçu</span>
+        <span class="status-chip">Acompte versé</span>
+        <span class="status-chip">Soldé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Paiements -->
+  <div class="form-section">
+    <h2 class="h2-ed">Vos <em>paiements</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Acompte versé</label>
+        <input type="text" class="input" placeholder="Ex : 600 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de versement</label>
+        <input type="text" class="input" placeholder="JJ / MM / AAAA">
+      </div>
+    </div>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Solde restant</label>
+        <input type="text" class="input" placeholder="Calculé" disabled>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de solde prévue</label>
+        <input type="text" class="input" placeholder="JJ / MM / AAAA">
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Mode de paiement</label>
+      <div class="status-chips">
+        <span class="status-chip">Chèque</span>
+        <span class="status-chip">Virement</span>
+        <span class="status-chip">Espèces</span>
+        <span class="status-chip">Autre</span>
+      </div>
+    </div>
+
+    <div class="form-field">
+      <label class="field-label">Preuve de paiement (optionnel)</label>
+      <div class="upload-zone">
+        <span class="upload-icon">⬆</span>
+        <div class="upload-text">Glissez une photo de chèque, RIB ou justificatif · ou cliquez pour choisir</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="form-section">
+    <h2 class="h2-ed">Notes <em>privées</em></h2>
+    <div class="form-field">
+      <label class="field-label">Commentaires libres</label>
+      <textarea class="textarea" rows="3" placeholder="Ex : Recommandé par tante Hélène · essayage le 20 avril"></textarea>
+    </div>
+  </div>
+
+  <!-- Récap -->
+  <div class="summary-box">
+    <div class="eyebrow" style="color: var(--gold); margin-bottom: 10px;">Impact sur votre budget</div>
+    <div class="summary-row">
+      <span class="muted">Catégorie</span>
+      <span>—</span>
+    </div>
+    <div class="summary-row">
+      <span class="muted">Devis total</span>
+      <span>—</span>
+    </div>
+    <div class="summary-row total">
+      <span>Ajouté à votre budget</span>
+      <span><em>—</em></span>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn-gold" onclick="showScreen('budget')">Enregistrer</button>
+    <button class="btn-ghost" onclick="showScreen('bifurcation')">Annuler</button>
+  </div>
+
+</div>
+
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('s-' + name).classList.add('active');
+  const tab = document.querySelector('.nav-tab[data-s="' + name + '"]');
+  if (tab) tab.classList.add('active');
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => showScreen(tab.dataset.s));
+});
+document.querySelectorAll('.status-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.parentElement.querySelectorAll('.status-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>

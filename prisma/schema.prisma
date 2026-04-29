@@ -26,12 +26,13 @@ model Couple {
   planningStage  String?
   onboardingDone Boolean @default(false)
 
-  tasks           CoupleTask[]
-  guests          Guest[]
-  conversations   Conversation[]
-  payments        Payment[]
-  vendorRelations VendorRelation[]
-  cagnotte        Cagnotte?
+  tasks              CoupleTask[]
+  guests             Guest[]
+  conversations      Conversation[]
+  payments           Payment[]
+  vendorRelations    VendorRelation[]
+  cagnotte           Cagnotte?
+  manualVendorEntries ManualVendorEntry[]
 
   @@map("couples")
 }
@@ -73,8 +74,9 @@ model Pro {
   ctaLabel      String?  // label du bouton CTA or (ex: "Voir le portfolio")
   ctaUrl        String?  // URL du CTA (site, SoundCloud, mix…)
 
-  tarifs        ProTarif[]
-  availability  ProAvailability[]
+  tarifs              ProTarif[]
+  availability        ProAvailability[]
+  manualVendorEntries ManualVendorEntry[]
   conversations Conversation[]
   payments      Payment[]
   paymentLinks    PaymentLink[]
@@ -476,6 +478,54 @@ enum WithdrawalStatus {
   PROCESSING
   COMPLETED
   FAILED
+}
+
+// ─── SAISIE MANUELLE BUDGET ──────────────────────────────────────────────────
+
+model ManualVendorEntry {
+  id        String   @id @default(cuid())
+  coupleId  String
+  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+
+  // Cas B : lié à un Pro de la plateforme (null = Cas C)
+  proId     String?
+  pro       Pro?     @relation(fields: [proId], references: [id], onDelete: SetNull)
+  isExternal Boolean @default(false) // false = Cas B, true = Cas C
+
+  // Identité (toujours rempli — copié du Pro pour Cas B, saisi pour Cas C)
+  vendorName     String
+  vendorCategory String
+  vendorCity     String?
+  vendorEmail    String?
+  vendorPhone    String?
+  vendorWebsite  String?
+
+  // Devis (en centimes — obligatoire)
+  totalAmount    Int
+  prestationDate DateTime? @db.Date
+
+  // Suivi paiement
+  status         ManualEntryStatus @default(QUOTED)
+  depositAmount  Int               @default(0)
+  depositPaidAt  DateTime?         @db.Date
+  balanceDueDate DateTime?         @db.Date
+  paymentMethod  String?           // check | transfer | cash | other
+
+  // Preuve (Cloudinary URL — Supabase Storage en V2)
+  proofUrl       String?
+
+  notes          String?   @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("manual_vendor_entries")
+}
+
+enum ManualEntryStatus {
+  DISCUSSING
+  QUOTED
+  DEPOSIT_PAID
+  FULLY_PAID
 }
 
 // ─── CONTENU ÉDITORIAL ───────────────────────────────────────────────────────
