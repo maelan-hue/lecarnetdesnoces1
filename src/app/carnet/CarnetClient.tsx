@@ -172,6 +172,8 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                     const cls    = isPaid ? "paid" : TASK_CLASS[task.status];
                     const proCategory = CATEGORY_TO_PRO[task.category];
                     const searchUrl   = proCategory ? `/prestataires?category=${proCategory}` : `/prestataires`;
+                    // Si un prestataire est assigné → lien vers le budget, sinon vers la recherche
+                    const targetUrl   = task.proName ? `/carnet/budget` : searchUrl;
 
                     // Compter favoris et retenu pour cette catégorie
                     const catRels    = proCategory ? relations.filter((r) => r.category === proCategory) : [];
@@ -180,7 +182,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
 
                     return (
                       <div key={task.id}>
-                        <div className={`task clickable ${cls}`} onClick={() => router.push(searchUrl)}>
+                        <div className={`task clickable ${cls}`} onClick={() => router.push(targetUrl)}>
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
                           <div className="task-name">{task.title}</div>
