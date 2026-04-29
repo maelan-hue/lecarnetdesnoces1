@@ -6,6 +6,7 @@ import { getSpecFields } from "@/lib/specs";
 import type { Metadata } from "next";
 import Link from "next/link";
 import FicheHeartButton from "@/components/couple/FicheHeartButton";
+import BackButton from "@/components/BackButton";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -74,15 +75,12 @@ export default async function FichePubliquePage({ params }: Props) {
     <div style={{ background:"var(--paper)", minHeight:"100vh" }}>
       {/* Nav */}
       <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
-        {isPro ? (
-          <Link href="/dashboard/portfolio" style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.62rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", textDecoration:"none" }}>← Retour au dashboard</Link>
-        ) : isCouple ? (
-          <Link href="/prestataires" style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.62rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", textDecoration:"none" }}>← Retour aux prestataires</Link>
-        ) : (
-          <Link href="/" className="landing-logo" style={{ fontSize:"1rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>
-        )}
-        {isPro && <Link href="/dashboard/portfolio" className="btn ghost small">Modifier ma fiche</Link>}
-        {!isPro && !isCouple && <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>}
+        <BackButton fallback={isPro ? "/dashboard" : isCouple ? "/prestataires" : "/"} />
+        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+          {isPro && <Link href="/dashboard/portfolio" className="btn ghost small">Modifier ma fiche</Link>}
+          {!isPro && !isCouple && <Link href="/" className="landing-logo" style={{ fontSize:"0.9rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>}
+          {!isPro && !isCouple && <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>}
+        </div>
       </nav>
 
       {/* Hero plein écran */}
