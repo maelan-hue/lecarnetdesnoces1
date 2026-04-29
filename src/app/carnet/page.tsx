@@ -21,10 +21,23 @@ export default async function CarnetPage() {
 
   if (!couple) redirect("/connexion");
 
-  const budgetEngage = couple.tasks.reduce((sum, t) => {
-    const paye = t.payments.reduce((s, p) => s + p.amount, 0);
-    return sum + (paye > 0 ? paye : t.quoteTotal ?? 0);
-  }, 0);
+  // Budget engagé = même calcul que BudgetSlot (centimes)
+  // Cas A : PaymentLinks Stripe payés
+  const stripeAgg = await db.paymentLink.aggregate({
+    where: {
+      status: "PAID",
+      pro: { conversations: { some: { coupleId: session.sub } } },
+    },
+    _sum: { quoteTotal: true },
+  });
+  // Cas B & C : saisies manuelles
+  const manualAgg = await db.manualVendorEntry.aggregate({
+    where:  { coupleId: session.sub },
+    _sum:   { totalAmount: true },
+  });
+  const budgetEngage = Math.round(
+    ((stripeAgg._sum.quoteTotal ?? 0) + (manualAgg._sum.totalAmount ?? 0)) / 100
+  );
 
   const guestTotal    = couple.guests.filter((g) => g.presence === "PRESENT").length;
   const days          = couple.weddingDate ? daysUntil(couple.weddingDate) : null;
