@@ -4,15 +4,6 @@ import Link from "next/link";
 export default function BifurcationPage() {
   return (
     <div className="container narrow" style={{ paddingTop:60 }}>
-      <div className="breadcrumb">
-        <Link href="/carnet">Mon carnet</Link>
-        <span className="sep">·</span>
-        <Link href="/carnet/budget">Mon budget</Link>
-        <span className="sep">·</span>
-        <span>Ajouter une prestation</span>
-      </div>
-
-      <div className="eyebrow">Mon carnet · Ajouter une prestation</div>
       <h1 className="page-title" style={{ marginBottom:8 }}>Quelle <em>situation</em> ?</h1>
       <p className="page-sub" style={{ marginBottom:32 }}>
         Choisissez la situation qui correspond à votre prestataire.
