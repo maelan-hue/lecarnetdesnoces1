@@ -184,11 +184,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                         <div className="task-check">{isPaid ? "€" : isDone ? "✓" : ""}</div>
                         <div>
                           <div className="task-name">{task.title}</div>
-                          {catRetained ? (
-                            <div className="task-pres" style={{ color:"var(--gold)" }}>✦ {catRetained.pro.name}</div>
-                          ) : catFavCount > 0 ? (
-                            <div className="task-pres">{catFavCount} favori{catFavCount > 1 ? "s" : ""} en comparaison</div>
-                          ) : task.proName ? (
+                          {task.proName ? (
                             <div className="task-pres">{task.proName}</div>
                           ) : task.description ? (
                             <div className="task-pres">{task.description}</div>
