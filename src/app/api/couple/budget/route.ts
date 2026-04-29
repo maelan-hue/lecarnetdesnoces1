@@ -80,14 +80,33 @@ export async function POST(req: NextRequest) {
     .map(([k]) => k);
 
   if (matchingTaskCats.length > 0) {
-    await db.coupleTask.updateMany({
-      where: { coupleId: session.sub, category: { in: matchingTaskCats }, status: "TODO" },
+    // Mettre à jour les tâches existantes (sans filtre sur le statut)
+    const updated = await db.coupleTask.updateMany({
+      where: { coupleId: session.sub, category: { in: matchingTaskCats } },
       data: {
         proName:    vendorName.trim(),
         quoteTotal: Math.round(Number(totalAmount) / 100),
         status:     "IN_PROGRESS",
       },
     });
+
+    // Si aucune tâche trouvée → en créer une dans le carnet
+    if (updated.count === 0) {
+      await db.coupleTask.create({
+        data: {
+          coupleId:    session.sub,
+          phase:       2,
+          position:    99,
+          category:    matchingTaskCats[0],
+          title:       vendorName.trim(),
+          timingLabel: "À organiser",
+          tipContext:  "carnet_phase_2",
+          proName:     vendorName.trim(),
+          quoteTotal:  Math.round(Number(totalAmount) / 100),
+          status:      "IN_PROGRESS",
+        },
+      });
+    }
   }
 
   return NextResponse.json(entry, { status: 201 });
