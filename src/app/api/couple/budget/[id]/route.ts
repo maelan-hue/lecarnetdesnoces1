@@ -40,19 +40,31 @@ export async function PATCH(req: NextRequest, { params }: P) {
   if (data.depositPaidAt)  data.depositPaidAt  = new Date(data.depositPaidAt as string);
   if (data.balanceDueDate) data.balanceDueDate  = new Date(data.balanceDueDate as string);
 
+  const oldCategory = entry.vendorCategory;
   const updated = await db.manualVendorEntry.update({ where: { id }, data });
 
-  // Synchroniser la tâche du carnet si le nom ou le montant change
-  if (data.vendorName || data.totalAmount) {
-    const taskCategory = (updated.vendorCategory).toLowerCase().replace(/_/g, "_");
+  const newCategory    = updated.vendorCategory;
+  const categoryChanged = oldCategory !== newCategory;
+
+  // Si la catégorie a changé → effacer proName sur l'ancienne tâche
+  if (categoryChanged) {
+    const oldTaskCat = oldCategory.toLowerCase().replace(/_/g, "_");
     await db.coupleTask.updateMany({
-      where: { coupleId: session.sub, category: taskCategory },
-      data: {
-        ...(data.vendorName ? { proName: updated.vendorName } : {}),
-        ...(data.totalAmount ? { quoteTotal: Math.round(updated.totalAmount / 100) } : {}),
-      },
+      where: { coupleId: session.sub, category: oldTaskCat },
+      data:  { proName: null, quoteTotal: null, status: "TODO" },
     });
   }
+
+  // Mettre à jour la tâche de la nouvelle catégorie
+  const newTaskCat = newCategory.toLowerCase().replace(/_/g, "_");
+  await db.coupleTask.updateMany({
+    where: { coupleId: session.sub, category: newTaskCat },
+    data: {
+      proName:    updated.vendorName,
+      quoteTotal: Math.round(updated.totalAmount / 100),
+      status:     "IN_PROGRESS",
+    },
+  });
 
   return NextResponse.json(updated);
 }
