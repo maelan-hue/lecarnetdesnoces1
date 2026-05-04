@@ -21,16 +21,15 @@ const STATUSES = [
 
 type Props = {
   mode: "cas-b" | "cas-c";
-  // Cas B uniquement : prestataire pré-rempli
   preFilledProId?:   string;
   preFilledName?:    string;
   preFilledCategory?:string;
-  // Edition
+  defaultDate?:      string; // date du mariage du couple (YYYY-MM-DD)
   initialData?: Record<string, string | number | boolean>;
   entryId?: string;
 };
 
-export default function ManualEntryForm({ mode, preFilledProId, preFilledName, preFilledCategory, initialData, entryId }: Props) {
+export default function ManualEntryForm({ mode, preFilledProId, preFilledName, preFilledCategory, defaultDate, initialData, entryId }: Props) {
   const router = useRouter();
 
   const [vendorName,     setVendorName]     = useState(String(initialData?.vendorName     ?? preFilledName     ?? ""));
@@ -43,7 +42,7 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
   const [depositEuros,   setDepositEuros]   = useState(initialData?.depositAmount ? String(Number(initialData.depositAmount)/100) : "");
   const [depositDate,    setDepositDate]    = useState(String(initialData?.depositPaidAt  ?? ""));
   const [balanceDate,    setBalanceDate]    = useState(String(initialData?.balanceDueDate ?? ""));
-  const [prestDate,      setPrestDate]      = useState(String(initialData?.prestationDate ?? ""));
+  const [prestDate,      setPrestDate]      = useState(String(initialData?.prestationDate ?? defaultDate ?? ""));
   const [paymentMethod,  setPaymentMethod]  = useState(String(initialData?.paymentMethod  ?? ""));
   const [status,         setStatus]         = useState(String(initialData?.status         ?? ""));
   const [notes,          setNotes]          = useState(String(initialData?.notes          ?? ""));
