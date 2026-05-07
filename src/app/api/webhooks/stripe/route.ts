@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // ── Paiement prestataire ──────────────────────────────────
+    // ── Paiement prestataire ── DÉSACTIVÉ MVP (V2) ───────────
+    // Cette branche ne sera plus déclenchée : plus aucun PaymentLink
+    // n'est créé depuis l'UI (routes _disabled_paiements et _disabled_payer).
+    // Code conservé intact pour la réactivation en V2.
+    // ─────────────────────────────────────────────────────────
     if (!linkId) return NextResponse.json({ ok: true });
 
     const link = await db.paymentLink.findUnique({

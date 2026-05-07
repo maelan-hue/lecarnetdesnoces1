@@ -163,6 +163,49 @@ export async function sendDonationReceiptEmail(opts: { to: string; couplePrenoms
   });
 }
 
+export async function sendPasswordResetEmail(opts: {
+  to: string;
+  resetUrl: string;
+}) {
+  return resend.emails.send({
+    from: FROM,
+    to:   opts.to,
+    subject: `Réinitialisation de votre mot de passe — Le Carnet des noces`,
+    html: `
+      <div style="font-family:'Georgia',serif;max-width:600px;margin:0 auto;background:#FAF8F4;padding:0;">
+        <div style="background:#1A1510;padding:24px 32px;">
+          <p style="margin:0;font-family:'Georgia',serif;font-size:18px;color:#FAF8F4;letter-spacing:0.04em;">
+            Le Carnet <em style="color:#A8833B;">des noces</em>
+          </p>
+        </div>
+        <div style="padding:32px;">
+          <p style="margin:0 0 8px;font-size:13px;letter-spacing:0.18em;text-transform:uppercase;color:#A8833B;font-family:'Jost',sans-serif;">
+            Sécurité du compte
+          </p>
+          <h2 style="margin:0 0 16px;font-size:22px;font-weight:300;color:#1A1510;">
+            Réinitialiser votre mot de passe
+          </h2>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.7;color:#3D3530;">
+            Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+          </p>
+          <a href="${opts.resetUrl}"
+             style="display:inline-block;background:#A8833B;color:#FAF8F4;padding:14px 28px;text-decoration:none;font-family:'Jost',sans-serif;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;">
+            Réinitialiser mon mot de passe →
+          </a>
+          <p style="margin:24px 0 0;font-size:13px;color:#7D7060;font-style:italic;line-height:1.6;">
+            Ce lien est valable 1 heure. Si vous n'avez pas fait cette demande, ignorez simplement cet email.
+          </p>
+        </div>
+        <div style="padding:16px 32px;border-top:1px solid #D4C9B3;text-align:center;">
+          <p style="margin:0;font-size:11px;color:#8A7B63;">
+            Le Carnet des noces · Perpignan &amp; Roussillon
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function sendDonationNotifEmail(opts: {
   to: string;
   amountNet: number;

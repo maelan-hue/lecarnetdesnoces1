@@ -218,14 +218,6 @@ export default async function FichePubliquePage({ params }: Props) {
             {isCouple && <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn ghost small" style={{ width:"100%", justifyContent:"center", display:"flex" }}>Envoyer un message</Link>}
           </div>
 
-          {(pro.city || pro.department) && (
-            <div className="aside-block">
-              <div className="aside-h">Zone d&apos;<em>intervention</em></div>
-              <p style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.9rem", color:"var(--mute)" }}>
-                {[pro.city, pro.department ? `Dép. ${pro.department}` : null, pro.radiusKm ? `Rayon ${pro.radiusKm} km` : null].filter(Boolean).join(" · ")}
-              </p>
-            </div>
-          )}
 
           {isCouple && (
             <div>

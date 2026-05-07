@@ -33,7 +33,7 @@ export default function PortfolioPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith("image/")) { setUploadError("Fichier image uniquement (JPG, PNG, WebP)."); return; }
-    if (file.size > 8 * 1024 * 1024)    { setUploadError("Fichier trop lourd (8 Mo maximum)."); return; }
+    if (file.size > 10 * 1024 * 1024)    { setUploadError("Fichier trop lourd (10 Mo maximum)."); return; }
 
     setUploadError(""); setUploading(true);
     const fd = new FormData();

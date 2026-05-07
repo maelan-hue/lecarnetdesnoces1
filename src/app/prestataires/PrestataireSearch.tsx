@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AMBIANCES } from "@/lib/utils";
-import FloatingActionBar from "@/components/couple/FloatingActionBar";
 
 type Pro = {
   id: string; slug: string; name: string; tagline: string | null;
@@ -30,7 +29,6 @@ function SearchContent({ coupleData, categories }: Props) {
   const [relations, setRelations] = useState<Relation[]>([]);
   const [loading,   setLoading]   = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
-  const [selected,  setSelected]  = useState<Set<string>>(new Set());
   const [category,  setCategory]  = useState(searchParams.get("category") ?? "");
   const [ambiance,  setAmbiance]  = useState("");
 
@@ -59,7 +57,6 @@ function SearchContent({ coupleData, categories }: Props) {
     setActionLoading(true);
 
     if (rel) {
-      // Retirer (favori ou retenu)
       await fetch("/api/couple/vendors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,7 +64,6 @@ function SearchContent({ coupleData, categories }: Props) {
       });
       setRelations((r) => r.filter((x) => x.proId !== pro.id));
     } else {
-      // Ajouter en favori
       const res  = await fetch("/api/couple/vendors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,27 +76,6 @@ function SearchContent({ coupleData, categories }: Props) {
         alert(json.error ?? "Erreur");
       }
     }
-    setActionLoading(false);
-  };
-
-  const toggleSelect = (e: React.MouseEvent, id: string) => {
-    e.stopPropagation();
-    setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
-  };
-
-  const handleAddFavorites = async () => {
-    setActionLoading(true);
-    for (const proId of Array.from(selected)) {
-      const pro = pros.find((p) => p.id === proId);
-      if (!pro || getRelation(proId)) continue;
-      const res = await fetch("/api/couple/vendors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ proId, category: pro.category, action: "favorite" }),
-      });
-      if (res.ok) setRelations((r) => [...r.filter((x) => x.proId !== proId), { proId, status: "FAVORITE", category: pro.category }]);
-    }
-    setSelected(new Set());
     setActionLoading(false);
   };
 
@@ -126,7 +101,7 @@ function SearchContent({ coupleData, categories }: Props) {
         <div className="eyebrow">Artisans du mariage</div>
         <h1 className="page-title">Nos <em>prestataires</em></h1>
         <p className="page-sub">
-          Cliquez sur ♥ pour ajouter aux favoris. Cochez pour sélectionner et envoyer un message groupé.
+          Cliquez sur ♥ pour ajouter aux favoris. Consultez les fiches et contactez directement chaque prestataire.
         </p>
       </div>
 
@@ -145,11 +120,6 @@ function SearchContent({ coupleData, categories }: Props) {
           {coupleData.weddingCity && <div className="ctx-fact"><div className="ctx-fact-lbl">Lieu</div><div className="ctx-fact-val">{coupleData.weddingCity}</div></div>}
           {coupleData.guestCount  && <div className="ctx-fact"><div className="ctx-fact-lbl">Invités</div><div className="ctx-fact-val">{coupleData.guestCount}</div></div>}
         </div>
-        {selected.size > 0 && (
-          <button className="btn gold small" onClick={() => router.push(`/messages/nouveau?pros=${Array.from(selected).join(",")}`)}>
-            Contacter {selected.size} sélectionné{selected.size > 1 ? "s" : ""}
-          </button>
-        )}
       </div>
 
       {/* Filtres catégorie */}
@@ -169,7 +139,7 @@ function SearchContent({ coupleData, categories }: Props) {
       </div>
 
       <div className="tip">
-        🌿 <strong>Bon à savoir —</strong> Ajoutez jusqu&apos;à 5 favoris par catégorie pour comparer. Cochez pour envoyer un message groupé.
+        🌿 <strong>Bon à savoir —</strong> Ajoutez jusqu&apos;à 5 favoris par catégorie pour comparer. Cliquez sur une fiche pour contacter le prestataire.
       </div>
 
       {loading ? (
@@ -184,21 +154,15 @@ function SearchContent({ coupleData, categories }: Props) {
           {pros.map((pro) => {
             const rel    = getRelation(pro.id);
             const isFav  = !!rel;
-            const isSel  = selected.has(pro.id);
             const avail  = getAvailLabel(pro);
 
             return (
               <div
                 key={pro.id}
-                className={`presta-card${isSel ? " selected" : ""}`}
+                className="presta-card"
                 onClick={() => router.push(`/prestataires/${pro.slug}`)}
                 style={{ cursor:"pointer", position:"relative" }}
               >
-                {/* Checkbox */}
-                <div className="checkbox-round" onClick={(e) => toggleSelect(e, pro.id)} title="Sélectionner" style={{ cursor:"pointer" }}>
-                  {isSel ? "✓" : ""}
-                </div>
-
                 {/* Photo / initiales */}
                 {pro.profilePhoto ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -246,14 +210,6 @@ function SearchContent({ coupleData, categories }: Props) {
           })}
         </div>
       )}
-
-      <FloatingActionBar
-        selectedIds={Array.from(selected)}
-        onSendMessage={() => router.push(`/messages/nouveau?pros=${Array.from(selected).join(",")}`)}
-        onAddFavorites={handleAddFavorites}
-        onClear={() => setSelected(new Set())}
-        loading={actionLoading}
-      />
     </div>
   );
 }

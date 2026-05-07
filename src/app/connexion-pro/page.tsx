@@ -30,7 +30,12 @@ export default function ConnexionProPage() {
         </div>
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: 20 }}><label className="field-label">Email</label><input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@atelier.fr" required /></div>
-          <div style={{ marginBottom: 28 }}><label className="field-label">Mot de passe</label><input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required /></div>
+          <div style={{ marginBottom: 8 }}><label className="field-label">Mot de passe</label><input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required /></div>
+          <div style={{ textAlign: "right", marginBottom: 20 }}>
+            <Link href="/mot-de-passe-oublie" style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", color: "var(--mute)", fontSize: "0.85rem" }}>
+              Mot de passe oublié ?
+            </Link>
+          </div>
           {error && <p className="serif" style={{ fontStyle: "italic", color: "var(--terracotta)", marginBottom: 16, fontSize: "0.95rem" }}>{error}</p>}
           <button className="btn gold" type="submit" disabled={loading} style={{ width: "100%", justifyContent: "center" }}>{loading ? "Connexion…" : "Se connecter"}</button>
         </form>

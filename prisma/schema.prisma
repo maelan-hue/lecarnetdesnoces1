@@ -250,6 +250,18 @@ enum SenderRole {
 }
 
 // ─── PAIEMENTS ───────────────────────────────────────────────────────────────
+// =====================================================
+// TABLES DÉSACTIVÉES POUR LE MVP — réactivation prévue en V2
+//
+// Les tables suivantes sont conservées dans le schéma mais ne sont
+// plus alimentées par l'UI :
+//   - payments      (paiements Stripe Connect entre couple et prestataire)
+//   - payment_links (liens de paiement créés par les pros)
+//
+// Si tu travailles sur ce code en V2, lis :
+//   PROMPT-DESACTIVATION-PAIEMENT.md
+//   PROMPT-PAIEMENT-RATTACHEMENT.md
+// =====================================================
 
 model PaymentLink {
   id        String   @id @default(cuid())
@@ -541,6 +553,20 @@ model Tip {
   active   Boolean @default(true)
 
   @@map("tips")
+}
+
+// ─── RÉINITIALISATION MOT DE PASSE ───────────────────────────────────────────
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  token     String    @unique
+  email     String
+  role      String    // "couple" | "pro"
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("password_reset_tokens")
 }
 
 // ─── ADMIN ───────────────────────────────────────────────────────────────────

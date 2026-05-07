@@ -52,7 +52,7 @@ function NouveauMessageContent() {
       <div className="page-head">
         <div className="eyebrow">Contacter</div>
         <h1 className="page-title">Votre <em>message</em></h1>
-        <p className="page-sub">Un même message, envoyé individuellement à chaque prestataire sélectionné.</p>
+        <p className="page-sub">Rédigez votre message — il sera envoyé directement au prestataire.</p>
       </div>
 
       <div className="msg-panel">
@@ -93,7 +93,7 @@ function NouveauMessageContent() {
 
         <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
           <button className="btn gold" onClick={handleSend} disabled={sending || proIds.length === 0}>
-            {sending ? "Envoi…" : `Envoyer à ${proIds.length} prestataire${proIds.length > 1 ? "s" : ""}`}
+            {sending ? "Envoi…" : "Envoyer"}
           </button>
           <Link href="/prestataires" className="btn ghost">Retour</Link>
         </div>

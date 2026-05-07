@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const file     = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "Aucun fichier reçu." }, { status: 400 });
   if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Fichier image uniquement." }, { status: 400 });
-  if (file.size > 5 * 1024 * 1024) return NextResponse.json({ error: "Fichier trop lourd (5 Mo max)." }, { status: 400 });
+  if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "Fichier trop lourd (10 Mo max)." }, { status: 400 });
 
   if (!process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY === "dev") {
     return NextResponse.json({ error: "Cloudinary non configuré." }, { status: 503 });

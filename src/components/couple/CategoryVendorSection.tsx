@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { PRO_CATEGORIES, CATEGORY_TO_PRO } from "@/lib/utils";
+import { PRO_CATEGORIES } from "@/lib/utils";
 
 type RelPro = {
   id: string; name: string; slug: string; category: string;
@@ -17,16 +16,14 @@ type Relation = {
 };
 
 type Props = {
-  category:     string; // clé enum, ex: "PHOTOGRAPHE"
-  taskCategory: string; // clé tâche, ex: "photographe"
+  category:     string;
+  taskCategory: string;
   relations:    Relation[];
   onRelationsChange: (updated: Relation[]) => void;
 };
 
-export default function CategoryVendorSection({ category, taskCategory, relations, onRelationsChange }: Props) {
-  const router  = useRouter();
+export default function CategoryVendorSection({ category, taskCategory: _taskCategory, relations, onRelationsChange }: Props) {
   const [acting, setActing] = useState(false);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const retained  = relations.find((r) => r.category === category && r.status === "RETAINED");
   const favorites = relations.filter((r) => r.category === category && r.status === "FAVORITE");
@@ -54,15 +51,10 @@ export default function CategoryVendorSection({ category, taskCategory, relation
         if (r.status === "RETAINED" && r.category === category) return { ...r, status: "FAVORITE" as const };
         return r;
       });
-      if (!updated.find((r) => r.proId === proId)) {
-        // shouldn't happen but safety net
-      }
       onRelationsChange(updated);
     }
     setActing(false);
   };
-
-  const toggleSel = (id: string) => setSelected((s) => { const n = new Set(s); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const initials = (name: string) => name.split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 
@@ -75,7 +67,6 @@ export default function CategoryVendorSection({ category, taskCategory, relation
     </div>
   );
 
-  // CAS 1 — rien
   if (!retained && favorites.length === 0) {
     return (
       <div className="vendor-empty">
@@ -89,7 +80,6 @@ export default function CategoryVendorSection({ category, taskCategory, relation
 
   return (
     <div>
-      {/* CAS 3 — retenu en tête */}
       {retained && (
         <div className="retained-card">
           <div className="retained-badge">
@@ -113,22 +103,13 @@ export default function CategoryVendorSection({ category, taskCategory, relation
         </div>
       )}
 
-      {/* CAS 2 / CAS 3 bas — favoris */}
       {favorites.length > 0 && (
         <div>
           <div style={{ fontSize:"0.7rem", letterSpacing:"0.16em", textTransform:"uppercase", color:"var(--mute)", marginBottom:10 }}>
             {retained ? `Autres en comparaison (${favorites.length})` : `Vos favoris (${favorites.length}/5)`}
           </div>
           {favorites.map((rel) => (
-            <div key={rel.id} style={{ display:"grid", gridTemplateColumns:"24px 1fr auto", gap:12, padding:"12px 0", borderBottom:"1px dashed var(--bone)", alignItems:"center" }}>
-              {/* Checkbox */}
-              <div
-                onClick={() => toggleSel(rel.pro.id)}
-                style={{ width:18, height:18, border:`1.5px solid ${selected.has(rel.pro.id) ? "var(--gold)" : "var(--bone)"}`, background: selected.has(rel.pro.id) ? "var(--gold)" : "transparent", display:"flex", alignItems:"center", justifyContent:"center", color:"var(--paper)", fontSize:"0.7rem", cursor:"pointer", flexShrink:0 }}
-              >
-                {selected.has(rel.pro.id) ? "✓" : ""}
-              </div>
-
+            <div key={rel.id} style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:12, padding:"12px 0", borderBottom:"1px dashed var(--bone)", alignItems:"center" }}>
               <div style={{ display:"flex", gap:10, alignItems:"center", minWidth:0 }}>
                 <ProAvatar pro={rel.pro} />
                 <div style={{ minWidth:0 }}>
@@ -147,16 +128,6 @@ export default function CategoryVendorSection({ category, taskCategory, relation
               </div>
             </div>
           ))}
-        </div>
-      )}
-
-      {/* Actions multi-sélection */}
-      {selected.size > 0 && (
-        <div style={{ marginTop:12, display:"flex", gap:8, flexWrap:"wrap", alignItems:"center" }}>
-          <button className="btn gold small" onClick={() => { router.push(`/messages/nouveau?pros=${Array.from(selected).join(",")}`); }}>
-            Envoyer un message groupé ({selected.size})
-          </button>
-          <button className="btn ghost small" onClick={() => setSelected(new Set())} style={{ fontSize:"0.58rem" }}>Annuler</button>
         </div>
       )}
 

@@ -38,6 +38,13 @@ yarn-error.log*
 # vercel
 .vercel
 
+# claude
+.claude/
+
+# dossiers locaux
+src/.next/
+src/tsconfig.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

@@ -53,13 +53,13 @@ export default function InscriptionProPage() {
         <div className="signup-hero">
           <div className="eyebrow">Pour les artisans du mariage</div>
           <h1 className="page-title">Rejoignez Le <em>Carnet des noces</em></h1>
-          <p className="page-sub" style={{ margin: "14px auto 0" }}>Un outil respectueux, éditorial, conçu pour votre métier. Pas d&apos;abonnement — nous gagnons seulement quand vous encaissez.</p>
+          <p className="page-sub" style={{ margin: "14px auto 0" }}>Un outil respectueux, éditorial, conçu pour votre métier. Inscription gratuite, aucun engagement.</p>
         </div>
 
         <div className="signup-benefit-grid" style={{ marginBottom: 50 }}>
           {[
             { icon: "✦", title: "Demandes qualifiées",   text: "Date, lieu, budget, style, invités. Fini les messages vagues." },
-            { icon: "§", title: "Paiements en un clic",  text: "Créez un lien Stripe en 30 secondes. 3 % à la charge du couple." },
+            { icon: "§", title: "Messagerie intégrée",    text: "Répondez aux demandes de devis directement depuis votre dashboard." },
             { icon: "✶", title: "Vitrine éditoriale",    text: "Portfolio 12 photos, tarifs, style. Un écrin à la hauteur de votre travail." },
             { icon: "◎", title: "Calendrier de dispos",  text: "Les couples voient vos dates disponibles avant de vous contacter." },
             { icon: "✎", title: "Messagerie centralisée",text: "Tous vos échanges avec vos couples en un endroit." },
@@ -101,7 +101,7 @@ export default function InscriptionProPage() {
               <label className="field-label">Département principal</label>
               <input className="input" value={form.department} onChange={(e) => set("department", e.target.value)} />
               <p className="serif" style={{ fontStyle: "italic", fontSize: "0.88rem", color: "var(--mute)", lineHeight: 1.5, margin: "0 0 20px", borderLeft: "2px solid var(--taupe)", paddingLeft: 14 }}>
-                En créant votre compte, vous acceptez les CGV. Les frais de service sont de <strong style={{ fontStyle: "normal", color: "var(--gold)", fontWeight: 500 }}>3 % sur l&apos;acompte</strong>, à la charge du couple. Aucun abonnement.
+                En créant votre compte, vous acceptez nos CGV.
               </p>
               {error && <p className="serif" style={{ fontStyle: "italic", color: "var(--terracotta)", marginBottom: 16 }}>{error}</p>}
               <button className="btn gold" type="submit" disabled={loading}>{loading ? "Envoi…" : "Créer mon compte"}</button>

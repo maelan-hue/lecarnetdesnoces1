@@ -5,12 +5,10 @@ import { useState, useEffect } from "react";
 
 const MENU = [
   { href: "/dashboard",                label: "Tableau de bord",    section: "Gestion",     badge: false },
-  { href: "/dashboard/paiements",      label: "Mes paiements",      section: "Gestion",     badge: false },
   { href: "/dashboard/messagerie",     label: "Messagerie",         section: "Gestion",     badge: true  },
   { href: "/dashboard/disponibilites", label: "Mes disponibilités", section: "Gestion",     badge: false },
   { href: "/dashboard/fiche",          label: "Ma fiche publique",  section: "Mon profil",  badge: false },
   { href: "/dashboard/portfolio",      label: "Portfolio & tarifs", section: "Mon profil",  badge: false },
-  { href: "/dashboard/banque",         label: "Compte bancaire",    section: "Mon profil",  badge: false },
   { href: "/dashboard/statistiques",   label: "Statistiques",       section: "Mon profil",  badge: false },
   { href: "/dashboard/compte",         label: "Mon compte",         section: "Mon profil",  badge: false },
 ];

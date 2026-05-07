@@ -1,3 +1,8 @@
+// =====================================================
+// ROUTE DÉSACTIVÉE POUR LE MVP — réactivation prévue en V2
+// Voir PROMPT-DESACTIVATION-PAIEMENT.md
+// Ne pas supprimer ce fichier.
+// =====================================================
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
