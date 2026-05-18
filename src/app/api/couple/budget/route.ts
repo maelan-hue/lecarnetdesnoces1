@@ -109,5 +109,14 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Si l'entrée vient d'une sélection (proId fourni), lier et confirmer
+  if (proId) {
+    await db.vendorSelection.upsert({
+      where:  { coupleId_proId: { coupleId: session.sub, proId } },
+      update: { status: "confirmed", confirmedAt: new Date(), budgetEntryId: entry.id },
+      create: { coupleId: session.sub, proId, status: "confirmed", category: vendorCategory, confirmedAt: new Date(), budgetEntryId: entry.id },
+    });
+  }
+
   return NextResponse.json(entry, { status: 201 });
 }

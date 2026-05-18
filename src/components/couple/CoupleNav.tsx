@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
 // Sous-routes du carnet qui ont leur propre onglet nav
-const CARNET_SUB_ROUTES = ["/carnet/cagnotte", "/carnet/budget", "/carnet/favoris"];
+const CARNET_SUB_ROUTES = ["/carnet/cagnotte", "/carnet/budget"];
 
 function isActive(pathname: string, href: string): boolean {
   if (!pathname.startsWith(href)) return false;

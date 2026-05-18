@@ -30,6 +30,7 @@ model Couple {
   conversations      Conversation[]
   payments           Payment[]
   vendorRelations    VendorRelation[]
+  vendorSelections   VendorSelection[]
   cagnotte           Cagnotte?
   manualVendorEntries ManualVendorEntry[]
 
@@ -81,7 +82,8 @@ model Pro {
   paymentLinks    PaymentLink[]
   stats           ProStats?
   tasks           CoupleTask[]
-  vendorRelations VendorRelation[]
+  vendorRelations  VendorRelation[]
+  vendorSelections VendorSelection[]
 
   @@map("pros")
 }
@@ -348,7 +350,29 @@ enum PaymentStatus {
   REFUNDED
 }
 
-// ─── RELATIONS PRESTATAIRES ──────────────────────────────────────────────────
+// ─── SÉLECTION PRESTATAIRES ──────────────────────────────────────────────────
+
+model VendorSelection {
+  id        String   @id @default(cuid())
+  coupleId  String
+  couple    Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  proId     String
+  pro       Pro      @relation(fields: [proId], references: [id], onDelete: Cascade)
+
+  status    String   // "selection" | "confirmed"
+  category  String   // dénormalisé depuis pro.category
+
+  budgetEntryId String?            @unique
+  budgetEntry   ManualVendorEntry? @relation(fields: [budgetEntryId], references: [id], onDelete: SetNull)
+
+  addedAt     DateTime  @default(now())
+  confirmedAt DateTime?
+
+  @@unique([coupleId, proId])
+  @@map("vendor_selections")
+}
+
+// ─── ANCIENNE TABLE (conservée pendant la transition — à supprimer après validation) ───
 
 model VendorRelation {
   id        String               @id @default(cuid())
@@ -357,7 +381,7 @@ model VendorRelation {
   proId     String
   pro       Pro                  @relation(fields: [proId], references: [id], onDelete: Cascade)
   status    VendorRelationStatus
-  category  String               // dénormalisé pour requêtes rapides par catégorie
+  category  String
   createdAt DateTime             @default(now())
   updatedAt DateTime             @updatedAt
 
@@ -528,6 +552,8 @@ model ManualVendorEntry {
   notes          String?   @db.Text
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
+
+  vendorSelection VendorSelection?
 
   @@map("manual_vendor_entries")
 }

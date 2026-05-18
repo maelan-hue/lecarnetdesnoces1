@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PRO_CATEGORIES } from "@/lib/utils";
 
 type RelPro = {
@@ -10,49 +11,48 @@ type RelPro = {
   tarifs: { priceFrom: number }[];
 };
 
-type Relation = {
-  id: string; proId: string; status: "FAVORITE" | "RETAINED"; category: string;
+type Selection = {
+  id: string; proId: string; status: string; category: string;
+  budgetEntry: { id: string; totalAmount: number } | null;
   pro: RelPro;
 };
 
 type Props = {
   category:     string;
   taskCategory: string;
-  relations:    Relation[];
-  onRelationsChange: (updated: Relation[]) => void;
+  selections:   Selection[];
+  onSelectionsChange: (updated: Selection[]) => void;
 };
 
-export default function CategoryVendorSection({ category, taskCategory: _taskCategory, relations, onRelationsChange }: Props) {
+const fmt = (cents: number) => (cents / 100).toLocaleString("fr-FR", { minimumFractionDigits: 0 }) + " €";
+
+export default function CategoryVendorSection({ category, taskCategory: _tc, selections, onSelectionsChange }: Props) {
+  const router  = useRouter();
   const [acting, setActing] = useState(false);
 
-  const retained  = relations.find((r) => r.category === category && r.status === "RETAINED");
-  const favorites = relations.filter((r) => r.category === category && r.status === "FAVORITE");
-  const searchUrl = `/prestataires?category=${category}`;
+  const confirmed   = selections.filter((s) => s.status === "confirmed");
+  const inSelection = selections.filter((s) => s.status === "selection");
+  const searchUrl   = `/prestataires?category=${category}`;
 
   const remove = async (proId: string) => {
+    if (!confirm("Retirer ce prestataire de votre sélection ?")) return;
     setActing(true);
-    await fetch("/api/couple/vendors", {
+    await fetch("/api/couple/selections", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proId, category, action: "remove" }),
+      body: JSON.stringify({ proId, action: "remove" }),
     });
-    onRelationsChange(relations.filter((r) => r.proId !== proId));
+    onSelectionsChange(selections.filter((s) => s.proId !== proId));
     setActing(false);
   };
 
-  const retain = async (proId: string, proCategory: string) => {
+  const unconfirm = async (proId: string) => {
+    if (!confirm("Remettre ce prestataire en sélection ? Le devis associé sera supprimé.")) return;
     setActing(true);
-    const res = await fetch("/api/couple/vendors", {
+    await fetch("/api/couple/selections", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ proId, category: proCategory, action: "retain" }),
+      body: JSON.stringify({ proId, action: "unconfirm" }),
     });
-    if (res.ok) {
-      const updated = relations.map((r) => {
-        if (r.proId === proId)  return { ...r, status: "RETAINED" as const };
-        if (r.status === "RETAINED" && r.category === category) return { ...r, status: "FAVORITE" as const };
-        return r;
-      });
-      onRelationsChange(updated);
-    }
+    onSelectionsChange(selections.map((s) => s.proId === proId ? { ...s, status: "selection", budgetEntry: null } : s));
     setActing(false);
   };
 
@@ -67,11 +67,11 @@ export default function CategoryVendorSection({ category, taskCategory: _taskCat
     </div>
   );
 
-  if (!retained && favorites.length === 0) {
+  if (confirmed.length === 0 && inSelection.length === 0) {
     return (
       <div className="vendor-empty">
         <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:14, fontSize:"0.95rem" }}>
-          Aucun {PRO_CATEGORIES[category]?.toLowerCase() ?? category} sélectionné.
+          Aucun {PRO_CATEGORIES[category]?.toLowerCase() ?? category} dans votre sélection.
         </p>
         <Link href={searchUrl} className="btn gold small">Découvrir les prestataires →</Link>
       </div>
@@ -80,51 +80,67 @@ export default function CategoryVendorSection({ category, taskCategory: _taskCat
 
   return (
     <div>
-      {retained && (
-        <div className="retained-card">
-          <div className="retained-badge">
-            ✦ Votre {PRO_CATEGORIES[category]?.toLowerCase() ?? category}
+      {/* ── Confirmés ── */}
+      {confirmed.length > 0 && (
+        <div style={{ marginBottom:16 }}>
+          <div style={{ fontSize:"0.7rem", letterSpacing:"0.16em", textTransform:"uppercase", color:"var(--gold)", marginBottom:10, display:"flex", alignItems:"center", gap:8 }}>
+            ✦ Confirmé{confirmed.length > 1 ? "s" : ""}
+            <span style={{ color:"var(--mute)", fontWeight:400 }}>({confirmed.length})</span>
           </div>
-          <div style={{ display:"flex", gap:14, alignItems:"center", justifyContent:"space-between", flexWrap:"wrap" }}>
-            <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-              <ProAvatar pro={retained.pro} />
-              <div>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1.1rem", fontWeight:500 }}>{retained.pro.name}</div>
-                {retained.pro.tagline && <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.85rem", color:"var(--mute)" }}>{retained.pro.tagline}</div>}
-                {retained.pro.tarifs[0] && <div style={{ fontSize:"0.78rem", color:"var(--gold)", fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic" }}>À partir de {retained.pro.tarifs[0].priceFrom.toLocaleString("fr-FR")} €</div>}
+          {confirmed.map((sel) => (
+            <div key={sel.id} style={{ border:"1px solid var(--bone)", borderLeft:"2px solid var(--gold)", padding:"14px 18px", marginBottom:8, display:"grid", gridTemplateColumns:"1fr auto", gap:12, alignItems:"center", background:"rgba(168,131,59,0.04)" } as React.CSSProperties}>
+              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                <ProAvatar pro={sel.pro} />
+                <div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", fontWeight:500 }}>{sel.pro.name}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.78rem", color:"var(--mute)" }}>
+                    {sel.pro.tagline ?? (sel.pro.city ?? "")}
+                  </div>
+                  {sel.budgetEntry
+                    ? <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.85rem", color:"var(--gold)", marginTop:2 }}>{fmt(sel.budgetEntry.totalAmount)}</div>
+                    : <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.78rem", color:"var(--mute)", marginTop:2 }}>budget non renseigné</div>
+                  }
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                {sel.budgetEntry
+                  ? <button className="btn ghost small" onClick={() => router.push(`/carnet/budget/${sel.budgetEntry!.id}/modifier`)}>Modifier budget</button>
+                  : <button className="btn gold small" onClick={() => router.push(`/carnet/budget/ajouter/plateforme?proId=${sel.proId}&category=${sel.category}`)}>Saisir le devis</button>
+                }
+                <button className="btn ghost small" style={{ fontSize:"0.56rem" }} onClick={() => unconfirm(sel.proId)} disabled={acting}>Remettre en sélection</button>
               </div>
             </div>
-            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-              <Link href={`/messages/nouveau?pros=${retained.pro.id}`} className="btn gold small">Message</Link>
-              <Link href={`/prestataires/${retained.pro.slug}`} className="btn ghost small">Fiche</Link>
-              <button className="heart-btn filled" onClick={() => remove(retained.pro.id)} disabled={acting} title="Retirer des favoris">♥</button>
-            </div>
-          </div>
+          ))}
         </div>
       )}
 
-      {favorites.length > 0 && (
+      {/* ── Ma sélection ── */}
+      {inSelection.length > 0 && (
         <div>
-          <div style={{ fontSize:"0.7rem", letterSpacing:"0.16em", textTransform:"uppercase", color:"var(--mute)", marginBottom:10 }}>
-            {retained ? `Autres en comparaison (${favorites.length})` : `Vos favoris (${favorites.length}/5)`}
+          <div style={{ fontSize:"0.7rem", letterSpacing:"0.16em", textTransform:"uppercase", color:"var(--taupe)", marginBottom:10 }}>
+            Ma sélection ({inSelection.length} en comparaison)
           </div>
-          {favorites.map((rel) => (
-            <div key={rel.id} style={{ display:"grid", gridTemplateColumns:"1fr auto", gap:12, padding:"12px 0", borderBottom:"1px dashed var(--bone)", alignItems:"center" }}>
-              <div style={{ display:"flex", gap:10, alignItems:"center", minWidth:0 }}>
-                <ProAvatar pro={rel.pro} />
-                <div style={{ minWidth:0 }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", fontWeight:500, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{rel.pro.name}</div>
-                  {rel.pro.tarifs[0] && <div style={{ fontSize:"0.78rem", color:"var(--gold)", fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic" }}>À partir de {rel.pro.tarifs[0].priceFrom.toLocaleString("fr-FR")} €</div>}
+          {inSelection.map((sel) => (
+            <div key={sel.id} style={{ background:"var(--paper)", border:"1px solid var(--bone)", borderLeft:"2px solid var(--taupe)", padding:"14px 18px", marginBottom:8, display:"grid", gridTemplateColumns:"1fr auto", gap:12, alignItems:"center" }}>
+              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                <ProAvatar pro={sel.pro} />
+                <div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", fontWeight:500 }}>{sel.pro.name}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.78rem", color:"var(--mute)" }}>
+                    {sel.pro.tagline ?? (sel.pro.city ?? "")}
+                  </div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.78rem", color:"var(--mute)", marginTop:2 }}>budget non renseigné</div>
                 </div>
               </div>
-
-              <div style={{ display:"flex", gap:6, alignItems:"center", flexShrink:0 }}>
-                <Link href={`/prestataires/${rel.pro.slug}`} className="btn ghost small" style={{ fontSize:"0.56rem" }}>Fiche</Link>
-                <Link href={`/messages/nouveau?pros=${rel.pro.id}`} className="btn ghost small" style={{ fontSize:"0.56rem" }}>Message</Link>
-                <button className="retain-btn" onClick={() => retain(rel.pro.id, rel.category)} disabled={acting} title={retained ? "Retenir à la place" : "Retenir ce prestataire"}>
-                  {retained ? "★ Retenir à la place" : "★ Retenir"}
+              <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                <Link href={`/prestataires/${sel.pro.slug}`} className="btn ghost small" style={{ fontSize:"0.56rem" }}>Fiche</Link>
+                <button
+                  className="btn gold small"
+                  onClick={() => router.push(`/carnet/budget/ajouter/plateforme?proId=${sel.proId}&category=${sel.category}`)}
+                >
+                  Choisir ce prestataire
                 </button>
-                <button className="heart-btn filled" onClick={() => remove(rel.pro.id)} disabled={acting} title="Retirer des favoris">♥</button>
+                <button className="btn ghost small" style={{ fontSize:"0.56rem" }} onClick={() => remove(sel.proId)} disabled={acting}>Retirer</button>
               </div>
             </div>
           ))}

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sélection prestataires · Le Carnet des noces</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF8F4; --ivory: #F2ECE1; --bone: #D4C9B3;
+    --taupe: #8A7B63; --ink: #1A1510; --gold: #A8833B;
+    --terracotta: #B0604A; --sage: #7A8B6E; --mute: #6B6356;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--ivory); color: var(--ink); font-family: 'Jost', sans-serif; font-weight: 300; }
+
+  .nav-bar { position: sticky; top: 0; z-index: 100; background: var(--ink); color: var(--paper); padding: 14px 24px; display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--gold); }
+  .nav-tab { background: transparent; color: var(--paper); border: 1px solid transparent; padding: 8px 18px; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; white-space: nowrap; }
+  .nav-tab:hover { border-color: var(--gold); }
+  .nav-tab.active { background: var(--gold); border-color: var(--gold); }
+  .nav-label { font-size: 0.6rem; color: var(--taupe); letter-spacing: 0.22em; padding: 0 10px; align-self: center; }
+
+  .screen { display: none; padding: 30px; max-width: 920px; margin: 0 auto; }
+  .screen.active { display: block; }
+
+  .eyebrow { font-family: 'Jost', sans-serif; font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); font-weight: 500; }
+  .h1-ed { font-family: 'Cormorant Garamond', serif; font-size: 2.4rem; font-weight: 400; line-height: 1.15; margin: 8px 0 4px; }
+  .h1-ed em { font-style: italic; color: var(--gold); }
+  .h2-ed { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 500; margin-bottom: 12px; }
+  .h2-ed em { font-style: italic; color: var(--gold); }
+  .body-ed { font-family: 'Cormorant Garamond', serif; font-size: 1rem; line-height: 1.7; }
+  .muted { color: var(--mute); font-style: italic; }
+
+  .btn-gold { background: var(--gold); color: var(--paper); border: none; padding: 11px 22px; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; }
+  .btn-gold:hover { opacity: 0.9; }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--taupe); padding: 10px 18px; font-family: 'Jost', sans-serif; font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer; }
+  .btn-ghost:hover { background: var(--paper); }
+
+  .breadcrumb { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.92rem; color: var(--mute); margin-bottom: 14px; }
+  .breadcrumb a { color: var(--gold); text-decoration: none; cursor: pointer; }
+  .breadcrumb a:hover { text-decoration: underline; }
+
+  .tip-box { background: var(--ivory); border-left: 2px solid var(--gold); padding: 14px 18px; margin-bottom: 24px; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.92rem; color: var(--ink); line-height: 1.55; }
+  .tip-box strong { color: var(--gold); font-style: normal; font-weight: 500; }
+
+  /* ========== ANNUAIRE — CARTE PRESTATAIRE ========== */
+  .annuaire-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .annuaire-grid { grid-template-columns: 1fr; } }
+  .presta-card {
+    background: var(--paper); border: 1px solid var(--bone);
+    overflow: hidden; display: flex; flex-direction: column;
+    position: relative; transition: border-color 0.2s;
+  }
+  .presta-card:hover { border-color: var(--taupe); }
+  .presta-card.selected { border-color: var(--gold); border-width: 1px; border-left-width: 3px; }
+  .presta-photo { aspect-ratio: 16/10; background: linear-gradient(135deg, var(--bone), var(--taupe)); display: flex; align-items: center; justify-content: center; color: var(--paper); font-family: 'Cormorant Garamond', serif; font-style: italic; opacity: 0.8; position: relative; }
+  .presta-info { padding: 18px 22px; flex-grow: 1; display: flex; flex-direction: column; }
+  .presta-cat-tag { font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--taupe); font-weight: 500; margin-bottom: 6px; }
+  .presta-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; margin-bottom: 4px; }
+  .presta-meta { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.88rem; margin-bottom: 12px; }
+  .presta-price { font-family: 'Cormorant Garamond', serif; font-size: 0.95rem; color: var(--gold); font-style: italic; margin-bottom: 14px; flex-grow: 1; }
+  .presta-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Bouton "Ajouter à ma sélection" */
+  .btn-select {
+    background: transparent; color: var(--gold); border: 1px solid var(--gold);
+    padding: 8px 14px; font-family: 'Jost', sans-serif; font-size: 0.66rem;
+    letter-spacing: 0.14em; text-transform: uppercase; font-weight: 500; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-select:hover { background: rgba(168,131,59,0.08); }
+  .btn-select.added { background: var(--gold); color: var(--paper); }
+  .btn-select.added::before { content: "✓ "; }
+
+  /* Badge "Dans ma sélection" */
+  .presta-badge-selected {
+    position: absolute; top: 14px; right: 14px;
+    background: var(--gold); color: var(--paper);
+    padding: 4px 10px; font-size: 0.58rem; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500; font-family: 'Jost', sans-serif;
+    z-index: 5;
+  }
+
+  /* ========== CARNET — RUBRIQUE PAR CATÉGORIE ========== */
+  .cat-section { margin-bottom: 32px; }
+  .cat-section-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 10px; padding-bottom: 8px;
+    border-bottom: 1px dashed var(--bone);
+  }
+  .cat-name { font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 500; }
+  .cat-name em { font-style: italic; color: var(--gold); }
+  .cat-count { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.92rem; }
+
+  /* Carte prestataire dans le carnet */
+  .carnet-presta-row {
+    background: var(--paper); border: 1px solid var(--bone);
+    padding: 18px 22px; margin-bottom: 8px;
+    display: grid; grid-template-columns: 1fr auto auto; gap: 14px;
+    align-items: center;
+  }
+  @media (max-width: 720px) {
+    .carnet-presta-row { grid-template-columns: 1fr; gap: 10px; }
+  }
+  .carnet-presta-row.selected { border-left: 2px solid var(--taupe); }
+  .carnet-presta-row.confirmed { border-left: 2px solid var(--gold); background: rgba(168,131,59,0.04); }
+  .carnet-presta-row.manual { border-left: 2px solid var(--terracotta); }
+
+  .carnet-presta-info { display: flex; flex-direction: column; gap: 4px; }
+  .carnet-presta-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 500; }
+  .carnet-presta-meta { font-family: 'Jost', sans-serif; font-size: 0.68rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--taupe); }
+  .status-tag {
+    display: inline-block; padding: 3px 10px;
+    font-family: 'Jost', sans-serif; font-size: 0.6rem; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 500;
+  }
+  .status-tag.selection {
+    background: rgba(138,123,99,0.12); color: var(--taupe);
+    border: 1px solid rgba(138,123,99,0.3);
+  }
+  .status-tag.confirmed {
+    background: rgba(168,131,59,0.12); color: var(--gold);
+    border: 1px solid rgba(168,131,59,0.3);
+  }
+  .status-tag.manual {
+    background: rgba(176,96,74,0.1); color: var(--terracotta);
+    border: 1px solid rgba(176,96,74,0.25);
+  }
+  .carnet-presta-amount {
+    font-family: 'Cormorant Garamond', serif; font-style: italic;
+    color: var(--gold); font-size: 1.1rem;
+  }
+  .carnet-presta-amount.empty {
+    color: var(--mute); font-style: italic; font-size: 0.85rem;
+  }
+  .carnet-presta-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  /* ========== ÉCRAN BUDGET / BIFURCATION ========== */
+  .choice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+  @media (max-width: 720px) { .choice-grid { grid-template-columns: 1fr; } }
+  .choice-card {
+    background: var(--paper); border: 1px solid var(--bone);
+    padding: 28px 26px; cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .choice-card:hover { border-color: var(--gold); }
+  .choice-icon { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 2rem; color: var(--gold); margin-bottom: 6px; }
+  .choice-title { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-weight: 500; line-height: 1.3; }
+  .choice-title em { font-style: italic; color: var(--gold); }
+  .choice-desc { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 0.92rem; line-height: 1.5; flex-grow: 1; }
+  .choice-arrow { font-family: 'Cormorant Garamond', serif; color: var(--gold); margin-top: 12px; font-style: italic; }
+
+  /* Liste de sélection à choisir dans le budget */
+  .selection-pick-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+  .selection-pick-row {
+    background: var(--paper); border: 1px solid var(--bone);
+    padding: 14px 20px;
+    display: grid; grid-template-columns: 1fr auto; gap: 14px;
+    align-items: center; cursor: pointer; transition: all 0.2s;
+  }
+  .selection-pick-row:hover { border-color: var(--gold); }
+  .pick-info { display: flex; flex-direction: column; gap: 2px; }
+  .pick-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; font-weight: 500; }
+  .pick-meta { font-family: 'Jost', sans-serif; font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--taupe); }
+
+  /* Form Budget */
+  .form-section { background: var(--paper); border: 1px solid var(--bone); padding: 28px 30px; margin-bottom: 20px; }
+  .form-section.gold { border-color: var(--gold); border-left: 2px solid var(--gold); }
+  .field-label { font-family: 'Jost', sans-serif; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--taupe); font-weight: 500; margin-bottom: 8px; display: block; }
+  .input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--bone); padding: 10px 0; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); outline: none; }
+  .input:focus { border-bottom-color: var(--gold); }
+  .input.prefilled { color: var(--mute); font-style: italic; }
+  .input.prefilled-gold { color: var(--gold); font-style: italic; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 580px) { .form-row-2 { grid-template-columns: 1fr; } }
+  .form-field { margin-bottom: 18px; }
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; padding-top: 20px; border-top: 1px dashed var(--bone); }
+
+  /* Toast / message d'info */
+  .info-banner {
+    background: rgba(168,131,59,0.08); border: 1px solid var(--gold); border-left: 3px solid var(--gold);
+    padding: 16px 20px; margin-bottom: 20px;
+    font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--ink);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .info-banner-icon { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.5rem; color: var(--gold); flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="nav-bar">
+  <span class="nav-label">Flow sélection</span>
+  <button class="nav-tab active" data-s="annuaire">1 · Annuaire</button>
+  <button class="nav-tab" data-s="carnet-rubrique">2 · Carnet — rubrique catégorie</button>
+  <button class="nav-tab" data-s="budget-flow-A">3 · Budget — pré-rempli (Flow A)</button>
+  <button class="nav-tab" data-s="budget-bifurcation">4 · Budget — bifurcation (Flow B)</button>
+  <button class="nav-tab" data-s="budget-from-selection">5 · Choisir depuis sélection</button>
+</div>
+
+
+<!-- ════════════ 1. ANNUAIRE AVEC AJOUT À LA SÉLECTION ════════════ -->
+<div class="screen active" id="s-annuaire">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <span>Découvrir les prestataires</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Annuaire</div>
+  <h1 class="h1-ed">Découvrez les <em>photographes</em></h1>
+  <p class="muted body-ed">8 photographes disponibles pour votre date · Ajoutez ceux qui vous plaisent à votre sélection pour les comparer.</p>
+
+  <div class="tip-box" style="margin-top: 20px;">
+    🌿 <strong>Bon à savoir —</strong> Ajoutez plusieurs prestataires à votre sélection pour les comparer tranquillement. Quand vous serez prêts, choisissez celui que vous retenez. Tout reste modifiable.
+  </div>
+
+  <div class="annuaire-grid">
+
+    <!-- Carte 1 — pas dans la sélection -->
+    <div class="presta-card">
+      <div class="presta-photo">portfolio</div>
+      <div class="presta-info">
+        <div class="presta-cat-tag">Photographe · Perpignan</div>
+        <div class="presta-name">Studio Mila &amp; Jules</div>
+        <div class="presta-meta">Reportage sensible · 10-12h · galerie + USB</div>
+        <div class="presta-price">à partir de 2 400 €</div>
+        <div class="presta-actions">
+          <button class="btn-select">+ Ajouter à ma sélection</button>
+          <button class="btn-ghost">Voir la fiche</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 2 — dans la sélection (badge + bouton coché) -->
+    <div class="presta-card selected">
+      <span class="presta-badge-selected">✓ Dans ma sélection</span>
+      <div class="presta-photo">portfolio</div>
+      <div class="presta-info">
+        <div class="presta-cat-tag">Photographe · Céret</div>
+        <div class="presta-name">Atelier Lumière</div>
+        <div class="presta-meta">Argentique &amp; numérique · 8h · 500 photos</div>
+        <div class="presta-price">à partir de 1 900 €</div>
+        <div class="presta-actions">
+          <button class="btn-select added">Dans ma sélection</button>
+          <button class="btn-ghost">Voir la fiche</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 3 -->
+    <div class="presta-card selected">
+      <span class="presta-badge-selected">✓ Dans ma sélection</span>
+      <div class="presta-photo">portfolio</div>
+      <div class="presta-info">
+        <div class="presta-cat-tag">Photographe · Argelès</div>
+        <div class="presta-name">Eva Roux Photographie</div>
+        <div class="presta-meta">Reportage éditorial · 10h · album inclus</div>
+        <div class="presta-price">à partir de 2 600 €</div>
+        <div class="presta-actions">
+          <button class="btn-select added">Dans ma sélection</button>
+          <button class="btn-ghost">Voir la fiche</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 4 -->
+    <div class="presta-card">
+      <div class="presta-photo">portfolio</div>
+      <div class="presta-info">
+        <div class="presta-cat-tag">Photographe · Banyuls</div>
+        <div class="presta-name">Thomas Vidal</div>
+        <div class="presta-meta">Style cinématographique · drone inclus</div>
+        <div class="presta-price">à partir de 2 200 €</div>
+        <div class="presta-actions">
+          <button class="btn-select">+ Ajouter à ma sélection</button>
+          <button class="btn-ghost">Voir la fiche</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ════════════ 2. CARNET — RUBRIQUE D'UNE CATÉGORIE ════════════ -->
+<div class="screen" id="s-carnet-rubrique">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <span>Photographe</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Photographe</div>
+  <h1 class="h1-ed">Vos <em>photographes</em></h1>
+  <p class="muted body-ed">3 prestataires dans votre sélection · 1 confirmé · les comparaisons se font ici.</p>
+
+  <!-- Section Confirmés -->
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name">✦ <em>Confirmé</em></div>
+      <div class="cat-count">1 prestataire · 2 600 €</div>
+    </div>
+
+    <div class="carnet-presta-row confirmed">
+      <div class="carnet-presta-info">
+        <div class="carnet-presta-name">Eva Roux Photographie <span class="status-tag confirmed" style="margin-left: 8px; vertical-align: middle;">Confirmé</span></div>
+        <div class="carnet-presta-meta">Photographe · Argelès</div>
+      </div>
+      <div class="carnet-presta-amount">2 600 €</div>
+      <div class="carnet-presta-actions">
+        <button class="btn-ghost" onclick="showScreen('budget-flow-A')">Modifier budget</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Ma sélection -->
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name">Ma <em>sélection</em></div>
+      <div class="cat-count">2 en comparaison</div>
+    </div>
+
+    <div class="carnet-presta-row selected">
+      <div class="carnet-presta-info">
+        <div class="carnet-presta-name">Atelier Lumière <span class="status-tag selection" style="margin-left: 8px; vertical-align: middle;">Ma sélection</span></div>
+        <div class="carnet-presta-meta">Photographe · Céret</div>
+      </div>
+      <div class="carnet-presta-amount empty">budget non renseigné</div>
+      <div class="carnet-presta-actions">
+        <button class="btn-gold" onclick="showScreen('budget-flow-A')" style="padding: 9px 16px; font-size: 0.66rem;">Choisir ce prestataire</button>
+        <button class="btn-ghost" style="padding: 8px 14px;">Retirer</button>
+      </div>
+    </div>
+
+    <div class="carnet-presta-row selected">
+      <div class="carnet-presta-info">
+        <div class="carnet-presta-name">Studio Mila &amp; Jules <span class="status-tag selection" style="margin-left: 8px; vertical-align: middle;">Ma sélection</span></div>
+        <div class="carnet-presta-meta">Photographe · Perpignan</div>
+      </div>
+      <div class="carnet-presta-amount empty">budget non renseigné</div>
+      <div class="carnet-presta-actions">
+        <button class="btn-gold" onclick="showScreen('budget-flow-A')" style="padding: 9px 16px; font-size: 0.66rem;">Choisir ce prestataire</button>
+        <button class="btn-ghost" style="padding: 8px 14px;">Retirer</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Exemple : Goodies invités avec plusieurs confirmés -->
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name">✦ Goodies <em>invités — Confirmés</em></div>
+      <div class="cat-count">2 prestataires · 540 €</div>
+    </div>
+
+    <div class="carnet-presta-row confirmed">
+      <div class="carnet-presta-info">
+        <div class="carnet-presta-name">Savonnerie du Roussillon <span class="status-tag confirmed" style="margin-left: 8px; vertical-align: middle;">Confirmé</span></div>
+        <div class="carnet-presta-meta">Savons personnalisés · 120 unités</div>
+      </div>
+      <div class="carnet-presta-amount">340 €</div>
+      <div class="carnet-presta-actions">
+        <button class="btn-ghost">Modifier budget</button>
+      </div>
+    </div>
+
+    <div class="carnet-presta-row manual">
+      <div class="carnet-presta-info">
+        <div class="carnet-presta-name">Confiserie Mila <span class="status-tag manual" style="margin-left: 8px; vertical-align: middle;">Hors plateforme · Confirmé</span></div>
+        <div class="carnet-presta-meta">Dragées · 120 unités</div>
+      </div>
+      <div class="carnet-presta-amount">200 €</div>
+      <div class="carnet-presta-actions">
+        <button class="btn-ghost">Modifier budget</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip-box" style="margin-top: 24px;">
+    🌿 <strong>Bon à savoir —</strong> Vous pouvez avoir plusieurs prestataires confirmés dans une même catégorie (ex : 2 fournisseurs de goodies). Chaque budget s'ajoute à votre total.
+  </div>
+
+</div>
+
+
+<!-- ════════════ 3. BUDGET — PRÉ-REMPLI (FLOW A : depuis carnet) ════════════ -->
+<div class="screen" id="s-budget-flow-A">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <a>Photographe</a> · <span>Studio Mila &amp; Jules · saisie du devis</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Saisie du devis</div>
+  <h1 class="h1-ed">Vos <em>échanges</em> avec Studio Mila &amp; Jules</h1>
+  <p class="muted body-ed" style="margin-bottom: 20px;">Le prestataire est pré-rempli depuis votre sélection. Saisissez votre devis pour alimenter le budget.</p>
+
+  <div class="info-banner">
+    <div class="info-banner-icon">✦</div>
+    <div>
+      <strong style="font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); font-style: normal;">Choix enregistré</strong><br>
+      <span class="body-ed">Studio Mila &amp; Jules est désormais confirmé dans votre carnet. Vous pouvez compléter le budget maintenant ou plus tard.</span>
+    </div>
+  </div>
+
+  <div class="tip-box">
+    🌿 <strong>Bon à savoir —</strong> Seul le devis total compte dans votre budget global. Les acomptes et soldes vous servent au suivi des paiements.
+  </div>
+
+  <!-- Identité (pré-remplie, en lecture quasi-seule) -->
+  <div class="form-section">
+    <h2 class="h2-ed">Le <em>prestataire</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Nom du prestataire</label>
+        <input type="text" class="input prefilled-gold" value="Studio Mila &amp; Jules" readonly>
+      </div>
+      <div class="form-field">
+        <label class="field-label">Catégorie</label>
+        <input type="text" class="input prefilled-gold" value="Photographe" readonly>
+      </div>
+    </div>
+  </div>
+
+  <!-- Devis -->
+  <div class="form-section gold">
+    <h2 class="h2-ed">Le <em>devis</em></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Devis total TTC</label>
+        <input type="text" class="input" placeholder="Ex : 2 400 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de prestation</label>
+        <input type="text" class="input" value="12 juin 2027">
+      </div>
+    </div>
+  </div>
+
+  <!-- Paiements (optionnel) -->
+  <div class="form-section">
+    <h2 class="h2-ed">Vos <em>paiements</em> <span style="font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--mute); font-size: 1rem; font-weight: 400;">— optionnel</span></h2>
+
+    <div class="form-row-2">
+      <div class="form-field">
+        <label class="field-label">Acompte versé</label>
+        <input type="text" class="input" placeholder="Ex : 720 €">
+      </div>
+      <div class="form-field">
+        <label class="field-label">Date de versement</label>
+        <input type="text" class="input" placeholder="JJ / MM / AAAA">
+      </div>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn-gold" onclick="showScreen('carnet-rubrique')">Enregistrer</button>
+    <button class="btn-ghost" onclick="showScreen('carnet-rubrique')">Passer pour l'instant</button>
+  </div>
+
+  <p class="muted body-ed" style="font-size: 0.85rem; margin-top: 14px;">En cliquant "Passer", le prestataire reste confirmé dans votre carnet. Vous pourrez renseigner le devis quand vous l'aurez reçu.</p>
+
+</div>
+
+
+<!-- ════════════ 4. BUDGET — BIFURCATION (FLOW B) ════════════ -->
+<div class="screen" id="s-budget-bifurcation">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <a>Mon budget</a> · <span>Ajouter une prestation</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Ajouter une prestation</div>
+  <h1 class="h1-ed">D'où <em>vient-il</em> ?</h1>
+  <p class="muted body-ed">Choisissez la situation qui correspond pour adapter la saisie.</p>
+
+  <div class="choice-grid">
+
+    <div class="choice-card" onclick="showScreen('budget-from-selection')">
+      <div class="choice-icon">§</div>
+      <div class="choice-title">Un prestataire de <em>ma sélection</em></div>
+      <div class="choice-desc">Choisissez parmi les prestataires que vous avez déjà sélectionnés sur Le Carnet. Le formulaire se pré-remplira pour vous.</div>
+      <div class="choice-arrow">Voir ma sélection →</div>
+    </div>
+
+    <div class="choice-card" onclick="alert('Cas C — formulaire complet hors plateforme')">
+      <div class="choice-icon">✦</div>
+      <div class="choice-title">Un prestataire <em>hors plateforme</em></div>
+      <div class="choice-desc">Saisissez un prestataire que vous avez trouvé en dehors du Carnet — par bouche-à-oreille, sur Instagram ou dans votre famille.</div>
+      <div class="choice-arrow">Saisir manuellement →</div>
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- ════════════ 5. CHOISIR DEPUIS LA SÉLECTION ════════════ -->
+<div class="screen" id="s-budget-from-selection">
+
+  <div class="breadcrumb">
+    <a>Mon carnet</a> · <a>Mon budget</a> · <a onclick="showScreen('budget-bifurcation')">Ajouter</a> · <span>Choisir dans ma sélection</span>
+  </div>
+
+  <div class="eyebrow">Mon carnet · Choisir un prestataire</div>
+  <h1 class="h1-ed">Votre <em>sélection</em></h1>
+  <p class="muted body-ed">5 prestataires dans votre sélection. Cliquez sur celui que vous souhaitez confirmer et saisir.</p>
+
+  <!-- Groupé par catégorie -->
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name">Photographe</div>
+      <div class="cat-count">3 en sélection</div>
+    </div>
+
+    <div class="selection-pick-list">
+      <div class="selection-pick-row" onclick="showScreen('budget-flow-A')">
+        <div class="pick-info">
+          <div class="pick-name">Studio Mila &amp; Jules</div>
+          <div class="pick-meta">Perpignan · à partir de 2 400 €</div>
+        </div>
+        <div class="choice-arrow" style="margin: 0;">Choisir →</div>
+      </div>
+
+      <div class="selection-pick-row" onclick="showScreen('budget-flow-A')">
+        <div class="pick-info">
+          <div class="pick-name">Atelier Lumière</div>
+          <div class="pick-meta">Céret · à partir de 1 900 €</div>
+        </div>
+        <div class="choice-arrow" style="margin: 0;">Choisir →</div>
+      </div>
+
+      <div class="selection-pick-row" onclick="showScreen('budget-flow-A')">
+        <div class="pick-info">
+          <div class="pick-name">Eva Roux Photographie</div>
+          <div class="pick-meta">Argelès · à partir de 2 600 €</div>
+        </div>
+        <div class="choice-arrow" style="margin: 0;">Choisir →</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cat-section">
+    <div class="cat-section-head">
+      <div class="cat-name">Fleuriste</div>
+      <div class="cat-count">2 en sélection</div>
+    </div>
+
+    <div class="selection-pick-list">
+      <div class="selection-pick-row" onclick="showScreen('budget-flow-A')">
+        <div class="pick-info">
+          <div class="pick-name">Atelier Camélia</div>
+          <div class="pick-meta">Perpignan · à partir de 1 200 €</div>
+        </div>
+        <div class="choice-arrow" style="margin: 0;">Choisir →</div>
+      </div>
+
+      <div class="selection-pick-row" onclick="showScreen('budget-flow-A')">
+        <div class="pick-info">
+          <div class="pick-name">Fleurs &amp; Fougères</div>
+          <div class="pick-meta">Céret · à partir de 950 €</div>
+        </div>
+        <div class="choice-arrow" style="margin: 0;">Choisir →</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 28px; padding-top: 20px; border-top: 1px dashed var(--bone); text-align: center;">
+    <p class="muted body-ed" style="margin-bottom: 12px; font-size: 0.92rem;">Vous ne voyez pas votre prestataire ? Vous pouvez aussi en ajouter un hors plateforme.</p>
+    <button class="btn-ghost" onclick="showScreen('budget-bifurcation')">+ Ajouter un prestataire hors plateforme</button>
+  </div>
+
+</div>
+
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('s-' + name).classList.add('active');
+  const tab = document.querySelector('.nav-tab[data-s="' + name + '"]');
+  if (tab) tab.classList.add('active');
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => showScreen(tab.dataset.s));
+});
+document.querySelectorAll('.btn-select').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    btn.classList.toggle('added');
+    if (btn.classList.contains('added')) {
+      btn.textContent = 'Dans ma sélection';
+    } else {
+      btn.textContent = '+ Ajouter à ma sélection';
+    }
+  });
+});
+</script>
+
+</body>
+</html>

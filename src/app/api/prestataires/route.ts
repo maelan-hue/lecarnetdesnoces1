@@ -12,10 +12,12 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get("category") ?? undefined;
   const ambiance = searchParams.get("ambiance") ?? undefined;
   const date     = searchParams.get("date") ?? undefined;
+  const ids      = searchParams.get("ids")?.split(",").filter(Boolean) ?? [];
 
   const pros = await db.pro.findMany({
     where: {
       status: "ACTIVE",
+      ...(ids.length > 0   ? { id: { in: ids } } : {}),
       ...(category ? { category: category as never } : {}),
       ...(ambiance  ? { ambiances: { has: ambiance } } : {}),
     },
@@ -46,10 +48,10 @@ export async function GET(req: NextRequest) {
   });
 
   // Incrémenter vues de fiche (silencieux)
-  const ids = pros.map((p) => p.id);
-  if (ids.length > 0) {
+  const proIds = pros.map((p) => p.id);
+  if (proIds.length > 0) {
     db.proStats.updateMany({
-      where: { proId: { in: ids } },
+      where: { proId: { in: proIds } },
       data:  { profileViews: { increment: 1 } },
     }).catch(() => {});
   }

@@ -5,8 +5,9 @@ import { PRO_CATEGORIES, AMBIANCES } from "@/lib/utils";
 import { getSpecFields } from "@/lib/specs";
 import type { Metadata } from "next";
 import Link from "next/link";
-import FicheHeartButton from "@/components/couple/FicheHeartButton";
+import AddToSelectionButton from "@/components/couple/AddToSelectionButton";
 import BackButton from "@/components/BackButton";
+import CoupleNav from "@/components/couple/CoupleNav";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -33,11 +34,13 @@ export default async function FichePubliquePage({ params }: Props) {
   const isCouple  = session?.role === "couple";
   const isPro     = session?.role === "pro" && session.sub === pro.id;
 
-  // Disponibilité + favori pour le couple connecté
+  // Disponibilité + sélection pour le couple connecté
   let availStatus: "ok" | "unavailable" | "contact" = "contact";
-  let isSaved = false;
+  let selectionStatus: "none" | "selection" | "confirmed" = "none";
+  let couplePrenoms = "";
   if (isCouple && session) {
-    const couple = await db.couple.findUnique({ where: { id: session.sub }, select: { weddingDate: true } });
+    const couple = await db.couple.findUnique({ where: { id: session.sub }, select: { weddingDate: true, prenoms: true } });
+    couplePrenoms = couple?.prenoms ?? "";
     if (couple?.weddingDate && pro.calendarActive) {
       const avail = await db.proAvailability.findUnique({
         where: { proId_date: { proId: pro.id, date: couple.weddingDate } },
@@ -45,10 +48,10 @@ export default async function FichePubliquePage({ params }: Props) {
       if (avail?.status === "AVAILABLE")   availStatus = "ok";
       if (avail?.status === "UNAVAILABLE") availStatus = "unavailable";
     }
-    const rel = await db.vendorRelation.findUnique({
+    const sel = await db.vendorSelection.findUnique({
       where: { coupleId_proId: { coupleId: session.sub, proId: pro.id } },
     });
-    isSaved = !!rel;
+    if (sel) selectionStatus = sel.status as "selection" | "confirmed";
   }
 
   // Incrémenter vues
@@ -74,14 +77,19 @@ export default async function FichePubliquePage({ params }: Props) {
   return (
     <div style={{ background:"var(--paper)", minHeight:"100vh" }}>
       {/* Nav */}
-      <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
-        <BackButton fallback={isPro ? "/dashboard" : isCouple ? "/prestataires" : "/"} />
-        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-          {isPro && <Link href="/dashboard/portfolio" className="btn ghost small">Modifier ma fiche</Link>}
-          {!isPro && !isCouple && <Link href="/" className="landing-logo" style={{ fontSize:"0.9rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>}
-          {!isPro && !isCouple && <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>}
-        </div>
-      </nav>
+      {isCouple
+        ? <CoupleNav prenoms={couplePrenoms} />
+        : (
+          <nav style={{ background:"var(--paper)", borderBottom:"1px solid var(--bone)", padding:"0 32px", height:52, display:"flex", alignItems:"center", justifyContent:"space-between", position:"sticky", top:0, zIndex:10 }}>
+            <BackButton fallback={isPro ? "/dashboard" : "/"} />
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              {isPro && <Link href="/dashboard/portfolio" className="btn ghost small">Modifier ma fiche</Link>}
+              {!isPro && <Link href="/" className="landing-logo" style={{ fontSize:"0.9rem", textDecoration:"none" }}>Le Carnet <em>des noces</em></Link>}
+              {!isPro && <Link href="/onboarding" className="btn gold small">Commencer mon carnet</Link>}
+            </div>
+          </nav>
+        )
+      }
 
       {/* Hero plein écran */}
       <div className="fiche-hero">
@@ -124,7 +132,7 @@ export default async function FichePubliquePage({ params }: Props) {
           )}
         </div>
         <div className="fiche-bar-right">
-          {isCouple && <FicheHeartButton proId={pro.id} category={pro.category} initialSaved={isSaved} />}
+          {isCouple && <AddToSelectionButton proId={pro.id} initialStatus={selectionStatus} />}
           {isCouple && (
             <Link href={`/messages/nouveau?pros=${pro.id}`} className="btn ghost small">Demander un devis</Link>
           )}

@@ -24,12 +24,13 @@ type Props = {
   preFilledProId?:   string;
   preFilledName?:    string;
   preFilledCategory?:string;
-  defaultDate?:      string; // date du mariage du couple (YYYY-MM-DD)
+  defaultDate?:      string;
   initialData?: Record<string, string | number | boolean>;
   entryId?: string;
+  onSkip?: () => void; // "Passer pour l'instant" depuis le flow sélection
 };
 
-export default function ManualEntryForm({ mode, preFilledProId, preFilledName, preFilledCategory, defaultDate, initialData, entryId }: Props) {
+export default function ManualEntryForm({ mode, preFilledProId, preFilledName, preFilledCategory, defaultDate, initialData, entryId, onSkip }: Props) {
   const router = useRouter();
 
   const [vendorName,     setVendorName]     = useState(String(initialData?.vendorName     ?? preFilledName     ?? ""));
@@ -94,7 +95,7 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
     else setError(json.error ?? "Erreur lors de la sauvegarde.");
   };
 
-  const catOptions = Object.entries(PRO_CATEGORIES);
+  const catOptions = Object.entries(PRO_CATEGORIES).filter(([k]) => k !== "ROBE_COSTUME");
 
   return (
     <div className="container narrow" style={{ paddingTop:60 }}>
@@ -160,7 +161,7 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           <div>
             <label className="field-label">Devis total TTC (obligatoire)</label>
-            <input className="input" type="number" min={0} step={1} placeholder="Ex : 1740" value={totalEuros} onChange={(e) => setTotalEuros(e.target.value)} />
+            <input className="input" type="text" inputMode="decimal" placeholder="Ex : 1740" value={totalEuros} onChange={(e) => setTotalEuros(e.target.value.replace(/[^0-9.,]/g, "").replace(",", "."))} />
           </div>
           <div>
             <label className="field-label">Date de prestation</label>
@@ -190,7 +191,7 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
           <div>
             <label className="field-label">Acompte versé (€)</label>
-            <input className="input" type="number" min={0} step={1} placeholder="Ex : 522" value={depositEuros} onChange={(e) => setDepositEuros(e.target.value)} />
+            <input className="input" type="text" inputMode="decimal" placeholder="Ex : 522" value={depositEuros} onChange={(e) => setDepositEuros(e.target.value.replace(/[^0-9.,]/g, "").replace(",", "."))} />
           </div>
           <div>
             <label className="field-label">Date de versement</label>
@@ -243,9 +244,17 @@ export default function ManualEntryForm({ mode, preFilledProId, preFilledName, p
 
       {error && <p style={{ color:"var(--terracotta)", fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", marginBottom:16 }}>{error}</p>}
 
-      <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+      <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center" }}>
         <button className="btn gold" onClick={handleSave} disabled={saving}>{saving ? "Sauvegarde…" : entryId ? "Enregistrer les modifications" : "Enregistrer"}</button>
         <Link href="/carnet/budget" className="btn ghost">Annuler</Link>
+        {onSkip && (
+          <button
+            onClick={onSkip}
+            style={{ background:"none", border:"none", cursor:"pointer", fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"0.88rem", color:"var(--mute)", textDecoration:"underline", textUnderlineOffset:3, padding:"0 4px" }}
+          >
+            Passer pour l&apos;instant
+          </button>
+        )}
         {entryId && (
           <button className="btn ghost small" style={{ borderColor:"var(--terracotta)", color:"var(--terracotta)", marginLeft:"auto" }}
             onClick={async () => {

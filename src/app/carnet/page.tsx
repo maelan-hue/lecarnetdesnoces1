@@ -22,7 +22,7 @@ export default async function CarnetPage() {
   // Entrées budget manuelles pour les liens directs depuis le carnet
   const manualEntries = await db.manualVendorEntry.findMany({
     where:   { coupleId: session.sub },
-    select:  { id: true, vendorName: true, vendorCategory: true },
+    select:  { id: true, vendorName: true, vendorCategory: true, totalAmount: true, isExternal: true },
   });
 
   if (!couple) redirect("/connexion");
@@ -91,7 +91,7 @@ export default async function CarnetPage() {
       guestTotal,
       totalTasks:     couple.tasks.length,
       phases,
-      manualEntries:  manualEntries.map((e) => ({ id: e.id, vendorName: e.vendorName, vendorCategory: e.vendorCategory })),
+      manualEntries:  manualEntries.map((e) => ({ id: e.id, vendorName: e.vendorName, vendorCategory: e.vendorCategory, totalAmount: e.totalAmount, isExternal: e.isExternal })),
     }} />
   );
 }

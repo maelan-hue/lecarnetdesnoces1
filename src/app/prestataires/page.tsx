@@ -26,6 +26,7 @@ export default async function PrestatairesPage() {
           ambiances:   couple.ambiances,
         }}
         categories={Object.entries(PRO_CATEGORIES).map(([value, label]) => ({ value, label }))}
+        isCouple={true}
       />
     </>
   );

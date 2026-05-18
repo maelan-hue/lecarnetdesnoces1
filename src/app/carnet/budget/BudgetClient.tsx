@@ -175,7 +175,6 @@ export default function BudgetClient({ data }: { data: Data }) {
                     <div className="vendor-cat">{label}</div>
                     <div className="vendor-name">
                       {m.vendorName}
-                      {!m.isExternal && <span className="badge-manual">Saisi manuellement</span>}
                       {m.isExternal  && <span className="badge-external">Hors plateforme</span>}
                     </div>
                     {m.depositAmount > 0 && (
