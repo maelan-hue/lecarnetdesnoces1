@@ -240,7 +240,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                             className={`task-check${isPaid ? "" : " toggle"}`}
                             onClick={(e) => toggleTaskDone(e, task)}
                           >
-                            {isPaid ? "€" : isDone ? "✓" : "✦"}
+                            {isPaid ? "€" : isDone ? "✓" : ""}
                           </div>
                           <div>
                             <div className="task-name">{task.title}</div>

@@ -597,9 +597,9 @@ body {
 .task.clickable:hover .task-name { color: var(--gold); }
 
 .task-check { width: 20px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: #6B6356; }
-.task-check.toggle { cursor: pointer; }
-.task-check.toggle:hover { color: var(--gold); }
-.task.done .task-check { color: var(--ok); }
+.task-check.toggle { width: 18px; height: 18px; box-sizing: border-box; border: 1.5px solid var(--bone); border-radius: 4px; font-size: 0.68rem; color: var(--paper); cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.task-check.toggle:hover { border-color: var(--gold); }
+.task.done .task-check.toggle { background: var(--ok); border-color: var(--ok); color: var(--paper); }
 .task.paid .task-check { color: var(--ink); font-size: 0.6rem; font-family: 'Jost', sans-serif; }
 
 .task-name { font-family: 'Cormorant Garamond', serif; font-size: 1.05rem; color: var(--ink); transition: color 0.2s; }
