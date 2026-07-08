@@ -565,6 +565,18 @@ body {
 .cd-n { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--ink); line-height: 1; }
 .cd-l { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); margin-top: 8px; }
 
+.parcours-summary { margin-bottom: 20px; }
+.parcours-summary-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 0.95rem;
+  color: var(--mute);
+  margin-bottom: 8px;
+}
+.parcours-summary-text em { font-style: normal; color: var(--gold); font-weight: 500; }
+.parcours-progress-track { height: 3px; background: var(--ivory); border-radius: 2px; overflow: hidden; max-width: 420px; }
+.parcours-progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s ease; }
+
 .phases { display: flex; flex-direction: column; gap: 14px; }
 .phase  { background: var(--paper); border: 1px solid var(--bone); }
 

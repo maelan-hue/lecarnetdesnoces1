@@ -51,13 +51,17 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
 
   const [open, setOpen] = useState<Record<number, boolean>>(() => {
     const state: Record<number, boolean> = {};
-    data.phases.forEach((p) => { state[p.phaseNum] = p.done < p.total; });
-    const firstOpen = data.phases.find((p) => p.done < p.total);
-    if (firstOpen) state[firstOpen.phaseNum] = true;
+    data.phases.forEach((p) => { state[p.phaseNum] = false; });
+    const activePhase = data.phases.find((p) => p.done < p.total) ?? data.phases[0];
+    if (activePhase) state[activePhase.phaseNum] = true;
     return state;
   });
 
   const toggle = (n: number) => setOpen((s) => ({ ...s, [n]: !s[n] }));
+
+  const totalDone      = data.phases.reduce((sum, p) => sum + p.done, 0);
+  const totalRemaining = data.totalTasks - totalDone;
+  const progressPct    = data.totalTasks > 0 ? Math.round((totalDone / data.totalTasks) * 100) : 0;
 
   const prenomParts  = data.prenoms.split(/[&\s]+/).filter(Boolean);
   const firstName    = prenomParts[0] ?? data.prenoms;
@@ -134,6 +138,15 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       {/* ── PHASES ── */}
       <div className="section-title" style={{ marginBottom: 6 }}>
         Votre <em style={{ fontFamily: "'Cormorant Garamond',serif", fontStyle: "italic", color: "var(--gold)" }}>parcours</em>
+      </div>
+
+      <div className="parcours-summary">
+        <p className="parcours-summary-text">
+          <em>{totalRemaining}</em> étape{totalRemaining !== 1 ? "s" : ""} à venir · <em>{totalDone}</em> complétée{totalDone !== 1 ? "s" : ""}
+        </p>
+        <div className="parcours-progress-track">
+          <div className="parcours-progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
       </div>
 
       <div className="phases">
