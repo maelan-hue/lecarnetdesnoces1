@@ -59,9 +59,38 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
 
   const toggle = (n: number) => setOpen((s) => ({ ...s, [n]: !s[n] }));
 
-  const totalDone      = data.phases.reduce((sum, p) => sum + p.done, 0);
-  const totalRemaining = data.totalTasks - totalDone;
-  const progressPct    = data.totalTasks > 0 ? Math.round((totalDone / data.totalTasks) * 100) : 0;
+  const [doneTasks, setDoneTasks] = useState<Set<string>>(() => {
+    const s = new Set<string>();
+    data.phases.forEach((p) => p.tasks.forEach((t) => { if (t.status === "DONE") s.add(t.id); }));
+    return s;
+  });
+
+  const isTaskDone = (task: Task) => doneTasks.has(task.id) || task.amountPaid > 0;
+
+  const toggleTaskDone = (e: React.MouseEvent, task: Task) => {
+    e.stopPropagation();
+    if (task.amountPaid > 0) return;
+    const next = !doneTasks.has(task.id);
+    setDoneTasks((s) => {
+      const copy = new Set(s);
+      if (next) copy.add(task.id); else copy.delete(task.id);
+      return copy;
+    });
+    fetch(`/api/couple/tasks/${task.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ done: next }),
+    }).catch(() => {
+      setDoneTasks((s) => {
+        const copy = new Set(s);
+        if (next) copy.delete(task.id); else copy.add(task.id);
+        return copy;
+      });
+    });
+  };
+
+  const totalDoneAll = data.phases.reduce((sum, p) => sum + p.tasks.filter(isTaskDone).length, 0);
+  const progressPct  = data.totalTasks > 0 ? Math.round((totalDoneAll / data.totalTasks) * 100) : 0;
 
   const prenomParts  = data.prenoms.split(/[&\s]+/).filter(Boolean);
   const firstName    = prenomParts[0] ?? data.prenoms;
@@ -141,24 +170,23 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       </div>
 
       <div className="parcours-summary">
-        <p className="parcours-summary-text">
-          <em>{totalRemaining}</em> étape{totalRemaining !== 1 ? "s" : ""} à venir · <em>{totalDone}</em> complétée{totalDone !== 1 ? "s" : ""}
-        </p>
         <div className="parcours-progress-track">
           <div className="parcours-progress-fill" style={{ width: `${progressPct}%` }} />
         </div>
+        <span className="parcours-progress-pct">{progressPct}%</span>
       </div>
 
       <div className="phases">
         {data.phases.map((phase) => {
           const isOpen    = !!open[phase.phaseNum];
-          const allDone   = phase.done === phase.total && phase.total > 0;
-          const hasActive = phase.done > 0 && !allDone;
+          const phaseDone = phase.tasks.filter(isTaskDone).length;
+          const allDone   = phaseDone === phase.total && phase.total > 0;
+          const hasActive = phaseDone > 0 && !allDone;
           const dotClass  = allDone ? "dot-done" : hasActive ? "dot-cur" : "dot-wait";
           const badgeClass = allDone ? "b-done" : hasActive ? "b-cur" : "b-wait";
           const badgeText  = allDone
-            ? `✓ ${phase.done} / ${phase.total} validées`
-            : phase.done > 0 ? `${phase.done} / ${phase.total} validés`
+            ? `✓ ${phaseDone} / ${phase.total} validées`
+            : phaseDone > 0 ? `${phaseDone} / ${phase.total} validés`
             : `À venir · ${phase.total} étapes`;
 
           return (
@@ -183,8 +211,8 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                 <div className="phase-inner">
                   {phase.tasks.map((task) => {
                     const isPaid = task.amountPaid > 0;
-                    const isDone = task.status === "DONE" || isPaid;
-                    const cls    = isPaid ? "paid" : TASK_CLASS[task.status];
+                    const isDone = isTaskDone(task);
+                    const cls    = isPaid ? "paid" : isDone ? "done" : TASK_CLASS[task.status];
                     const proCategory = CATEGORY_TO_PRO[task.category];
                     const searchUrl   = proCategory ? `/prestataires?category=${proCategory}` : `/prestataires`;
 
@@ -208,7 +236,12 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
                     return (
                       <div key={task.id}>
                         <div className={`task clickable ${cls}`} onClick={() => router.push(targetUrl)}>
-                          <div className="task-check">{isPaid ? "€" : "✦"}</div>
+                          <div
+                            className={`task-check${isPaid ? "" : " toggle"}`}
+                            onClick={(e) => toggleTaskDone(e, task)}
+                          >
+                            {isPaid ? "€" : isDone ? "✓" : "✦"}
+                          </div>
                           <div>
                             <div className="task-name">{task.title}</div>
                             {catSels.length === 0 && (task.proName

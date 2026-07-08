@@ -61,7 +61,7 @@ export default async function CarnetPage() {
     const phaseTasks = couple.tasks.filter((t) => t.phase === phaseNum);
     return {
       phaseNum,
-      done:  phaseTasks.filter((t) => t.status === "DONE").length,
+      done:  phaseTasks.filter((t) => t.status === "DONE" || t.payments.reduce((s, p) => s + p.amount, 0) > 0).length,
       total: phaseTasks.length,
       meta:  PHASE_META[phaseNum],
       tasks: phaseTasks.map((t) => ({
