@@ -574,7 +574,7 @@ body {
   margin-bottom: 8px;
 }
 .parcours-summary-text em { font-style: normal; color: var(--gold); font-weight: 500; }
-.parcours-progress-track { height: 3px; background: var(--ivory); border-radius: 2px; overflow: hidden; max-width: 420px; }
+.parcours-progress-track { height: 3px; background: var(--ivory); border: 1px solid var(--bone); border-radius: 2px; overflow: hidden; max-width: 420px; }
 .parcours-progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s ease; }
 
 .phases { display: flex; flex-direction: column; gap: 14px; }
