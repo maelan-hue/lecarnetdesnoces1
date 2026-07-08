@@ -19,15 +19,6 @@ type OnboardingData = {
   confirmPassword: string;
 };
 
-const AMBIANCES = [
-  { key: "champetre",    label: "Champêtre" },
-  { key: "classique",    label: "Classique chic" },
-  { key: "boheme",       label: "Bohème" },
-  { key: "moderne",      label: "Moderne" },
-  { key: "intimiste",    label: "Intimiste" },
-  { key: "mediterraneen",label: "Méditerranéen" },
-];
-
 const BUDGET_RANGES = [
   { key: "moins-15k",  label: "Moins de 15 000 €" },
   { key: "15k-30k",    label: "15 000 – 30 000 €" },
@@ -56,12 +47,6 @@ export default function OnboardingPage() {
   const set = (key: keyof OnboardingData, value: unknown) =>
     setData((d) => ({ ...d, [key]: value }));
 
-  const toggleAmbiance = (key: string) => {
-    const cur = data.ambiances;
-    if (cur.includes(key)) set("ambiances", cur.filter((a) => a !== key));
-    else if (cur.length < 3)  set("ambiances", [...cur, key]);
-  };
-
   const next = () => { setError(""); setStep((s) => s + 1); };
   const prev = () => { setError(""); setStep((s) => s - 1); };
 
@@ -87,7 +72,7 @@ export default function OnboardingPage() {
     }
   };
 
-  const dots = Array.from({ length: 6 }, (_, i) => {
+  const dots = Array.from({ length: 4 }, (_, i) => {
     if (i + 1 < step)  return "done";
     if (i + 1 === step) return "current";
     return "";
@@ -103,7 +88,7 @@ export default function OnboardingPage() {
   if (step === 1) return (
     <div className="container narrow" style={{ paddingTop: 80 }}>
       <Progress />
-      <div className="onb-step">Question 1 sur 6</div>
+      <div className="onb-step">Question 1 sur 4</div>
       <h2 className="onb-question">Dites-nous, <em>à quand</em> ce grand jour ?</h2>
       <p className="onb-hint">Votre date nous permet de créer un rétroplanning sur mesure — et de vous montrer les prestataires encore disponibles.</p>
 
@@ -137,36 +122,11 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // ── Q2 : Lieu ──────────────────────────────────────────────
+  // ── Q2 : Invités ───────────────────────────────────────────
   if (step === 2) return (
     <div className="container narrow" style={{ paddingTop: 80 }}>
       <Progress />
-      <div className="onb-step">Question 2 sur 6</div>
-      <h2 className="onb-question"><em>Où</em> célébrerez-vous ?</h2>
-      <p className="onb-hint">Nous cherchons autour de votre lieu pour vous suggérer les prestataires les plus proches, dans votre budget.</p>
-
-      <div className="onb-field">
-        <label className="field-label">Ville ou code postal</label>
-        <input
-          type="text"
-          placeholder="Ex : Perpignan, 66000"
-          value={data.weddingCity}
-          onChange={(e) => set("weddingCity", e.target.value)}
-        />
-      </div>
-
-      <div className="onb-nav">
-        <button className="onb-skip" onClick={prev}>Retour</button>
-        <button className="btn gold" onClick={next}>Continuer</button>
-      </div>
-    </div>
-  );
-
-  // ── Q3 : Invités ───────────────────────────────────────────
-  if (step === 3) return (
-    <div className="container narrow" style={{ paddingTop: 80 }}>
-      <Progress />
-      <div className="onb-step">Question 3 sur 6</div>
+      <div className="onb-step">Question 2 sur 4</div>
       <h2 className="onb-question"><em>Combien</em> serez-vous ?</h2>
       <p className="onb-hint">Un chiffre approximatif suffit. Il s&apos;affinera au fil de vos choix — et les prestataires l&apos;adaptent.</p>
 
@@ -186,39 +146,11 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // ── Q4 : Ambiance ──────────────────────────────────────────
-  if (step === 4) return (
+  // ── Q3 : Budget ────────────────────────────────────────────
+  if (step === 3) return (
     <div className="container narrow" style={{ paddingTop: 80 }}>
       <Progress />
-      <div className="onb-step">Question 4 sur 6</div>
-      <h2 className="onb-question">Fermez les yeux. Quelle <em>ambiance</em> vous rêvez ?</h2>
-      <p className="onb-hint">Trois ambiances maximum. Elles nous guideront vers les prestataires qui partagent votre vision.</p>
-
-      <div className="onb-options-grid" style={{ marginBottom: 30 }}>
-        {AMBIANCES.map(({ key, label }) => (
-          <div
-            key={key}
-            className={`onb-option${data.ambiances.includes(key) ? " selected" : ""}`}
-            onClick={() => toggleAmbiance(key)}
-          >
-            <span className="onb-option-label">{label}</span>
-            <div className="onb-option-mark">{data.ambiances.includes(key) ? "✓" : ""}</div>
-          </div>
-        ))}
-      </div>
-
-      <div className="onb-nav">
-        <button className="onb-skip" onClick={prev}>Retour</button>
-        <button className="btn gold" onClick={next}>Continuer</button>
-      </div>
-    </div>
-  );
-
-  // ── Q5 : Budget ────────────────────────────────────────────
-  if (step === 5) return (
-    <div className="container narrow" style={{ paddingTop: 80 }}>
-      <Progress />
-      <div className="onb-step">Question 5 sur 6</div>
+      <div className="onb-step">Question 3 sur 4</div>
       <h2 className="onb-question">Quel <em>budget</em> envisagez-vous ?</h2>
       <p className="onb-hint">Une estimation suffit — vous pourrez l&apos;ajuster à tout moment. Elle nous permet de vous proposer les prestataires adaptés, sans surprise.</p>
 
@@ -256,11 +188,11 @@ export default function OnboardingPage() {
     </div>
   );
 
-  // ── Q6 : Avancement ────────────────────────────────────────
-  if (step === 6) return (
+  // ── Q4 : Avancement ────────────────────────────────────────
+  if (step === 4) return (
     <div className="container narrow" style={{ paddingTop: 80 }}>
       <Progress />
-      <div className="onb-step">Question 6 sur 6</div>
+      <div className="onb-step">Question 4 sur 4</div>
       <h2 className="onb-question">Où en êtes-vous dans <em>l&apos;organisation</em> ?</h2>
       <p className="onb-hint">Cela nous aide à personnaliser votre to-do et à vous indiquer les étapes à prioriser dès aujourd&apos;hui.</p>
 
@@ -298,7 +230,7 @@ export default function OnboardingPage() {
   return (
     <div className="container narrow" style={{ paddingTop: 80 }}>
       <div className="onb-progress">
-        {Array.from({ length: 6 }, (_, i) => <div key={i} className="onb-dot done" />)}
+        {Array.from({ length: 4 }, (_, i) => <div key={i} className="onb-dot done" />)}
       </div>
       <div className="onb-step">Dernière étape</div>
       <h2 className="onb-question">Un <em>instant</em>, nous tissons votre carnet.</h2>
@@ -317,7 +249,7 @@ export default function OnboardingPage() {
                   : data.weddingSeason || "Date à définir"}
               </div>
               <div className="preview-text">
-                {[data.weddingCity, `${data.guestCount} invités`, ...data.ambiances].filter(Boolean).join(" · ")}
+                {`${data.guestCount} invités`}
               </div>
             </div>
           </div>
