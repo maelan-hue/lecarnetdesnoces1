@@ -59,13 +59,53 @@ export default async function LandingPage() {
           <div className="hero-eyebrow">Mariages du Sud &amp; de l&apos;élégance</div>
           <h1 className="hero-title">
             Votre mariage,<br />
-            <span className="hero-title-line2"><em>orchestré</em> avec délicatesse.</span>
+            <span className="hero-title-line2">à <em>votre</em> rythme.</span>
           </h1>
           <p className="hero-sub">
             {isPro
               ? "Recevez des demandes qualifiées, présentez votre travail dans un cadre élégant, gardez la main sur votre activité."
-              : "Un carnet d’adresses de confiance, une to-do personnalisée, des prestataires triés sur le volet. Tout ce qu’il faut pour composer votre jour, sans le poids de l’organisation."}
+              : "Un espace doux pour suivre votre budget, retrouver vos prestataires du 66, avancer pas à pas — pour que l'organisation reste un plaisir, pas une charge."}
           </p>
+
+          {!isLogged && (
+            <>
+              <span className="hero-badge-gratuit">100% gratuit</span>
+
+              <ul className="hero-features">
+                <li>
+                  <span className="hero-feature-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9 10h4.5a1.5 1.5 0 010 3H9"/></svg>
+                  </span>
+                  <span className="hero-feature-text">Budget</span>
+                </li>
+                <li>
+                  <span className="hero-feature-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M4 20c0-3.3 2.2-5.5 5-5.5s5 2.2 5 5.5M15 20c0-2.4 1.4-4.2 3.5-4.6"/></svg>
+                  </span>
+                  <span className="hero-feature-text">Invités</span>
+                </li>
+                <li>
+                  <span className="hero-feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.6C5 7 7.2 5 9.6 5c1 0 2 .5 2.4 1.3C12.4 5.5 13.4 5 14.4 5 16.8 5 19 7 19 10.4 19 15.6 12 20 12 20z"/></svg>
+                  </span>
+                  <span className="hero-feature-text">Cagnotte</span>
+                </li>
+                <li>
+                  <span className="hero-feature-icon">
+                    <svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="1"/><path d="M4 9h16M9 13h6M9 16h4"/></svg>
+                  </span>
+                  <span className="hero-feature-text">Site de mariage</span>
+                </li>
+                <li className="full-width">
+                  <span className="hero-feature-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 21s-6.5-6-6.5-11A6.5 6.5 0 0112 3a6.5 6.5 0 016.5 6.5C18.5 15 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.2"/></svg>
+                  </span>
+                  <span className="hero-feature-text">Prestataires triés dans le 66</span>
+                </li>
+              </ul>
+            </>
+          )}
+
           <div className="hero-ctas">
             {isCouple  && <Link href="/carnet"    className="btn large gold">Reprendre mon carnet →</Link>}
             {isPro     && <Link href="/dashboard" className="btn large gold">Accéder à mon dashboard →</Link>}
