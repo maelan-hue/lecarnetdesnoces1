@@ -206,6 +206,8 @@ body {
   color: var(--mute);
 }
 .chip.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip-toggle { border-style: dashed; color: var(--gold); border-color: rgba(168,131,59,0.4); }
+.chip-toggle:hover { background: var(--ivory); border-color: var(--gold); }
 
 /* ─── BREADCRUMB ─── */
 

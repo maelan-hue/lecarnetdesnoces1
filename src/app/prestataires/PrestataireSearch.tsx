@@ -25,6 +25,29 @@ type Props = {
 
 const PRIMARY_CATEGORIES = ["PHOTOGRAPHE", "TRAITEUR", "LIEU", "FLEURISTE"];
 
+const CATEGORY_EMOJI: Record<string, string> = {
+  PHOTOGRAPHE:          "📷",
+  VIDEASTE:             "🎥",
+  TRAITEUR:             "🍽️",
+  LIEU:                 "🏛️",
+  FLEURISTE:            "💐",
+  DJ_MUSICIEN:          "🎶",
+  OFFICIANT:            "💍",
+  COIFFURE_MAQUILLAGE:  "💄",
+  DECORATION_PAPETERIE: "🎀",
+  WEDDING_PLANNER:      "📋",
+  VINS_CHAMPAGNE:       "🥂",
+  VOITURE_TRANSPORT:    "🚗",
+  ROBE_COSTUME:         "👗",
+  ROBE:                 "👰",
+  COSTUME:              "🤵",
+  PHOTOBOOTH:           "📸",
+  ONGLES_MANUCURE:      "💅",
+  GOODIES_INVITES:      "🎁",
+  SOINS_PRE_MARIAGE:    "✨",
+  AUTRE:                "•",
+};
+
 function SearchContent({ coupleData, categories, isCouple }: Props) {
   const router       = useRouter();
   const searchParams = useSearchParams();
@@ -108,16 +131,20 @@ function SearchContent({ coupleData, categories, isCouple }: Props) {
         {categories
           .filter(({ value }) => PRIMARY_CATEGORIES.includes(value))
           .map(({ value, label }) => (
-            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
+            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>
+              <span aria-hidden="true">{CATEGORY_EMOJI[value]}</span> {label}
+            </button>
           ))}
-        {!showAllCategories && (
-          <button className="chip" onClick={() => setShowAllCategories(true)}>Plus de catégories</button>
-        )}
         {showAllCategories && categories
           .filter(({ value }) => !PRIMARY_CATEGORIES.includes(value))
           .map(({ value, label }) => (
-            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
+            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>
+              <span aria-hidden="true">{CATEGORY_EMOJI[value]}</span> {label}
+            </button>
           ))}
+        <button className="chip chip-toggle" onClick={() => setShowAllCategories((v) => !v)}>
+          {showAllCategories ? "− Moins de catégories" : "+ Plus de catégories"}
+        </button>
       </div>
 
       {loading ? (
