@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   const session = await getSession();
   if (!session || session.role !== "couple") return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
 
-  const { firstName, lastName, address, diet, presence, notes } = await req.json();
+  const { firstName, lastName, address, diet, presence, notes, group } = await req.json();
   if (!firstName?.trim() || !lastName?.trim()) {
     return NextResponse.json({ error: "Prénom et nom obligatoires." }, { status: 400 });
   }
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       diet:      diet || null,
       presence:  presence || "PENDING",
       notes:     notes?.trim() || null,
+      group:     group || null,
     },
   });
   return NextResponse.json(guest, { status: 201 });
