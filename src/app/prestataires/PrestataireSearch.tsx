@@ -18,10 +18,12 @@ type Pro = {
 type Selection = { proId: string; status: string };
 
 type Props = {
-  coupleData: { weddingDate: string | null; weddingCity: string | null; guestCount: number | null; ambiances: string[] };
+  coupleData: { weddingDate: string | null; weddingCity: string | null; guestCount: number | null };
   categories: { value: string; label: string }[];
   isCouple: boolean;
 };
+
+const PRIMARY_CATEGORIES = ["PHOTOGRAPHE", "TRAITEUR", "LIEU", "FLEURISTE"];
 
 function SearchContent({ coupleData, categories, isCouple }: Props) {
   const router       = useRouter();
@@ -31,13 +33,12 @@ function SearchContent({ coupleData, categories, isCouple }: Props) {
   const [selections, setSelections] = useState<Selection[]>([]);
   const [loading,    setLoading]    = useState(true);
   const [category,   setCategory]   = useState(searchParams.get("category") ?? "");
-  const [ambiance,   setAmbiance]   = useState("");
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams();
     if (category) params.set("category", category);
-    if (ambiance) params.set("ambiance", ambiance);
     if (coupleData.weddingDate) params.set("date", coupleData.weddingDate.split("T")[0]);
 
     const prosRes = await fetch(`/api/prestataires?${params}`);
@@ -49,7 +50,7 @@ function SearchContent({ coupleData, categories, isCouple }: Props) {
     }
 
     setLoading(false);
-  }, [category, ambiance, coupleData.weddingDate, isCouple]);
+  }, [category, coupleData.weddingDate, isCouple]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -104,30 +105,27 @@ function SearchContent({ coupleData, categories, isCouple }: Props) {
       <div className="filters-row">
         <span style={{ fontSize:"0.66rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", marginRight:6 }}>Catégorie</span>
         <button className={`chip${category === "" ? " active" : ""}`} onClick={() => setCategory("")}>Tous</button>
-        {categories.map(({ value, label }) => (
-          <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
-        ))}
+        {categories
+          .filter(({ value }) => PRIMARY_CATEGORIES.includes(value))
+          .map(({ value, label }) => (
+            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
+          ))}
+        {!showAllCategories && (
+          <button className="chip" onClick={() => setShowAllCategories(true)}>Plus de catégories</button>
+        )}
+        {showAllCategories && categories
+          .filter(({ value }) => !PRIMARY_CATEGORIES.includes(value))
+          .map(({ value, label }) => (
+            <button key={value} className={`chip${category === value ? " active" : ""}`} onClick={() => setCategory(value === category ? "" : value)}>{label}</button>
+          ))}
       </div>
-
-      <div className="filters-row" style={{ marginTop:-8 }}>
-        <span style={{ fontSize:"0.66rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)", marginRight:6 }}>Ambiance</span>
-        {Object.entries(AMBIANCES).map(([key, label]) => (
-          <button key={key} className={`chip${ambiance === key ? " active" : ""}`} onClick={() => setAmbiance(ambiance === key ? "" : key)}>{label}</button>
-        ))}
-      </div>
-
-      {isCouple && (
-        <div className="tip">
-          🌿 <strong>Bon à savoir —</strong> Ajoutez plusieurs prestataires à votre sélection pour les comparer tranquillement. Quand vous serez prêts, choisissez celui que vous retenez depuis votre carnet.
-        </div>
-      )}
 
       {loading ? (
         <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", padding:"40px 0" }}>Chargement…</p>
       ) : pros.length === 0 ? (
         <div style={{ padding:"60px 0", textAlign:"center" }}>
           <p className="serif" style={{ fontStyle:"italic", color:"var(--mute)", marginBottom:16 }}>Aucun prestataire trouvé.</p>
-          <button className="btn ghost small" onClick={() => { setCategory(""); setAmbiance(""); }}>Effacer les filtres</button>
+          <button className="btn ghost small" onClick={() => setCategory("")}>Effacer les filtres</button>
         </div>
       ) : (
         <div className="presta-list">

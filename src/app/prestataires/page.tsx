@@ -11,7 +11,7 @@ export default async function PrestatairesPage() {
 
   const couple = await db.couple.findUnique({
     where:  { id: session.sub },
-    select: { prenoms: true, weddingDate: true, weddingCity: true, guestCount: true, ambiances: true },
+    select: { prenoms: true, weddingDate: true, weddingCity: true, guestCount: true },
   });
   if (!couple) redirect("/connexion");
 
@@ -23,7 +23,6 @@ export default async function PrestatairesPage() {
           weddingDate: couple.weddingDate?.toISOString() ?? null,
           weddingCity: couple.weddingCity,
           guestCount:  couple.guestCount,
-          ambiances:   couple.ambiances,
         }}
         categories={Object.entries(PRO_CATEGORIES).map(([value, label]) => ({ value, label }))}
         isCouple={true}
