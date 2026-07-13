@@ -90,6 +90,7 @@ export default async function CarnetPage() {
       months,
       guestTotal,
       totalTasks:     couple.tasks.length,
+      welcomeBannerDismissed: couple.welcomeBannerDismissed,
       phases,
       manualEntries:  manualEntries.map((e) => ({ id: e.id, vendorName: e.vendorName, vendorCategory: e.vendorCategory, totalAmount: e.totalAmount, isExternal: e.isExternal })),
     }} />

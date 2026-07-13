@@ -18,7 +18,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 });
   }
 
-  const allowed = ["weddingDate", "weddingCity", "weddingVenue", "guestCount", "budgetEstimate"];
+  const allowed = ["weddingDate", "weddingCity", "weddingVenue", "guestCount", "budgetEstimate", "welcomeBannerDismissed"];
   const body    = await req.json();
   const data    = Object.fromEntries(
     Object.entries(body)

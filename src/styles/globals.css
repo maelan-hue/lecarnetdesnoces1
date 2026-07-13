@@ -128,6 +128,8 @@ body {
 .btn.ghost:hover { background: var(--ink); color: var(--paper); }
 .btn.small { padding: 9px 18px; font-size: 0.62rem; }
 .btn.large { padding: 18px 38px; font-size: 0.75rem; }
+.btn.gold-outline { background: transparent; color: var(--gold); border: 1px solid var(--gold); }
+.btn.gold-outline:hover { background: var(--gold); color: var(--ink); }
 
 /* ─── BADGES ─── */
 
@@ -549,6 +551,27 @@ body {
    CARNET COUPLE
    ═══════════════════════════════════════════ */
 
+.welcome-banner {
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  margin: 24px 0 8px; padding: 18px 26px;
+  background: linear-gradient(120deg, var(--paper) 0%, var(--ivory) 100%);
+  border: 1px solid var(--bone);
+}
+.welcome-banner::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 85% 20%, rgba(199,161,90,0.14), transparent 60%);
+  pointer-events: none;
+}
+.welcome-banner-text { position: relative; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.05rem; color: var(--ink); margin: 0; }
+.welcome-banner-text em { color: var(--gold); font-style: italic; font-weight: 500; }
+.welcome-banner-close {
+  position: relative; background: none; border: none; cursor: pointer;
+  font-size: 1.3rem; line-height: 1; color: var(--taupe); padding: 4px 8px; flex-shrink: 0;
+  transition: color 0.2s;
+}
+.welcome-banner-close:hover { color: var(--terracotta); }
+
 .carnet-head { display: grid; grid-template-columns: 1fr auto; gap: 20px; margin-bottom: 40px; padding-bottom: 30px; border-bottom: 1px solid var(--bone); align-items: end; }
 @media (max-width: 760px) { .carnet-head { grid-template-columns: 1fr; } }
 
@@ -556,9 +579,28 @@ body {
 .carnet-name em { color: var(--gold); font-style: italic; }
 .carnet-sub  { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1rem; color: var(--mute); }
 
-.budget-card { text-align: right; padding: 18px 26px; background: var(--ivory); border: 1px solid var(--bone); }
-.budget-lbl  { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--taupe); margin-bottom: 6px; }
-.budget-val  { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold); font-weight: 500; line-height: 1; }
+.budget-card { position: relative; overflow: hidden; text-align: right; padding: 18px 26px; background: var(--ivory); border: 1px solid var(--bone); }
+.budget-card-motif { position: absolute; top: -10px; left: -10px; width: 56px; height: 56px; color: #8A6A1F; opacity: 0.11; pointer-events: none; }
+.budget-lbl  { position: relative; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--taupe); margin-bottom: 6px; }
+.budget-val  { position: relative; font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; color: var(--gold); font-weight: 500; line-height: 1; }
+
+.prestataires-cta {
+  position: relative; overflow: hidden;
+  background: var(--ink); color: var(--paper);
+  text-align: center;
+  padding: 44px 30px;
+  margin-bottom: 40px;
+}
+.prestataires-cta::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(circle at 50% 0%, rgba(199,161,90,0.25), transparent 65%);
+  pointer-events: none;
+}
+.prestataires-cta-kicker { position: relative; font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 1.5rem; color: var(--paper); margin-bottom: 8px; }
+.prestataires-cta-kicker em { color: var(--gold); font-style: italic; }
+.prestataires-cta-desc   { position: relative; font-family: 'Jost', sans-serif; font-size: 0.85rem; color: rgba(250,248,244,0.7); margin-bottom: 26px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.prestataires-cta-btn    { position: relative; }
+.prestataires-cta-badge  { background: var(--gold); color: var(--ink); font-size: 0.6rem; font-family: 'Jost',sans-serif; font-weight: 600; padding: 2px 10px; border-radius: 100px; }
 
 .countdown { display: flex; gap: 16px; margin-bottom: 48px; padding: 22px 0; border-top: 1px solid var(--bone); border-bottom: 1px solid var(--bone); justify-content: center; flex-wrap: wrap; }
 .cd   { display: flex; flex-direction: column; align-items: center; min-width: 80px; padding: 0 14px; }
@@ -569,6 +611,7 @@ body {
 .parcours-progress-track { flex: 1; height: 3px; background: var(--ivory); border: 1px solid var(--bone); border-radius: 2px; overflow: hidden; max-width: 420px; }
 .parcours-progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s ease; }
 .parcours-progress-pct   { font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--gold); font-weight: 500; flex-shrink: 0; }
+.parcours-progress-start { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--gold); flex-shrink: 0; }
 
 .phases { display: flex; flex-direction: column; gap: 14px; }
 .phase  { background: var(--paper); border: 1px solid var(--bone); }

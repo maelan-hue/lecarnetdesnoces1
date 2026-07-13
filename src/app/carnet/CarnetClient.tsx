@@ -26,6 +26,7 @@ type CarnetData = {
   budgetEstimate: number | null; budgetEngage: number;
   days: number | null; months: number | null;
   guestTotal: number; totalTasks: number;
+  welcomeBannerDismissed: boolean;
   phases: Phase[];
   manualEntries: ManualEntry[];
 };
@@ -99,8 +100,28 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
 
   const selectionCount = selections.length;
 
+  const [welcomeDismissed, setWelcomeDismissed] = useState(data.welcomeBannerDismissed);
+  const showWelcome = !welcomeDismissed && data.budgetEngage === 0 && totalDoneAll === 0;
+
+  const dismissWelcome = () => {
+    setWelcomeDismissed(true);
+    fetch("/api/couple/profile", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ welcomeBannerDismissed: true }),
+    }).catch(() => {});
+  };
+
   return (
     <div className="container">
+
+      {showWelcome && (
+        <div className="welcome-banner">
+          <p className="welcome-banner-text">
+            Bienvenue <em>{firstName}</em>{secondName ? <> &amp; <em>{secondName}</em></> : ""} — votre carnet vous accompagne jusqu&apos;au jour J.
+          </p>
+          <button className="welcome-banner-close" onClick={dismissWelcome} aria-label="Fermer">×</button>
+        </div>
+      )}
 
       {/* ── EN-TÊTE ── */}
       <div className="carnet-head">
@@ -122,6 +143,13 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = "var(--gold)")}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = "var(--bone)")}
           >
+            <svg className="budget-card-motif" viewBox="0 0 80 80" fill="none" stroke="currentColor" strokeWidth="1">
+              <circle cx="40" cy="40" r="26" />
+              <circle cx="40" cy="16" r="9" />
+              <circle cx="40" cy="64" r="9" />
+              <circle cx="16" cy="40" r="9" />
+              <circle cx="64" cy="40" r="9" />
+            </svg>
             <div className="budget-lbl">Budget engagé →</div>
             <div className="budget-val">{budgetEngageEuros.toLocaleString("fr-FR")} €</div>
           </div>
@@ -141,26 +169,15 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       />
 
       {/* ── MA SÉLECTION ── */}
-      <div style={{ marginBottom: 32, display:"flex", alignItems:"center", justifyContent:"space-between", gap:16, flexWrap:"wrap" }}>
-        <Link
-          href="/prestataires"
-          style={{
-            display:"inline-flex", alignItems:"center", gap:10,
-            padding:"12px 22px", background:"var(--ivory)",
-            border:"1px solid var(--bone)", borderLeft:"2px solid var(--gold)",
-            textDecoration:"none", transition:"border-color 0.2s",
-          }}
-        >
-          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontStyle:"italic", fontSize:"1rem", color:"var(--gold)" }}>§</span>
-          <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:"1rem", fontWeight:500, color:"var(--ink)" }}>
-            Découvrir les prestataires
-          </span>
+      <div className="prestataires-cta">
+        <p className="prestataires-cta-kicker">Le premier pas de votre <em>aventure</em></p>
+        <p className="prestataires-cta-desc">Parcourez des prestataires triés sur le volet du Roussillon et composez votre sélection.</p>
+        <Link href="/prestataires" className="btn gold-outline large prestataires-cta-btn">
+          Découvrir les prestataires
           {selectionCount > 0 && (
-            <span style={{ background:"var(--gold)", color:"var(--paper)", fontSize:"0.6rem", fontFamily:"'Jost',sans-serif", fontWeight:600, padding:"1px 8px", borderRadius:100 }}>
-              {selectionCount} en sélection
-            </span>
+            <span className="prestataires-cta-badge">{selectionCount} en sélection</span>
           )}
-          <span style={{ fontFamily:"'Jost',sans-serif", fontSize:"0.6rem", letterSpacing:"0.14em", textTransform:"uppercase", color:"var(--mute)" }}>→</span>
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
 
@@ -173,7 +190,9 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
         <div className="parcours-progress-track">
           <div className="parcours-progress-fill" style={{ width: `${progressPct}%` }} />
         </div>
-        <span className="parcours-progress-pct">{progressPct}%</span>
+        {progressPct === 0
+          ? <span className="parcours-progress-start">Votre aventure commence</span>
+          : <span className="parcours-progress-pct">{progressPct}%</span>}
       </div>
 
       <div className="phases">

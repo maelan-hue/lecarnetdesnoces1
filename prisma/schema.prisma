@@ -24,6 +24,7 @@ model Couple {
   ambiances      String[]
   planningStage  String?
   onboardingDone Boolean @default(false)
+  welcomeBannerDismissed Boolean @default(false)
 
   tasks              CoupleTask[]
   guests             Guest[]
