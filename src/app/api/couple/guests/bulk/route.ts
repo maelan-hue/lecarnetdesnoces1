@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 
 type BulkGuestInput = {
   firstName: string; lastName: string;
-  address?: string; diet?: string; group?: string;
+  address?: string; diet?: string; presenceMoments?: string[];
   presence?: "PRESENT" | "ABSENT" | "PENDING";
 };
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       lastName:  g.lastName.trim(),
       address:   g.address?.trim() || null,
       diet:      g.diet?.trim() || null,
-      group:     g.group?.trim() || null,
+      presenceMoments: Array.isArray(g.presenceMoments) ? g.presenceMoments : [],
       presence:  g.presence || "PENDING",
     })),
   });

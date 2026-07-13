@@ -202,7 +202,7 @@ model Guest {
   diet      String?
   presence  GuestPresence @default(PENDING)
   notes     String?
-  group     String?
+  presenceMoments String[] @default([])
 
   @@map("guests")
 }

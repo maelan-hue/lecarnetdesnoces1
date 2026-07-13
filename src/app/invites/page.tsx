@@ -7,19 +7,53 @@ type Guest = {
   id: string; firstName: string; lastName: string;
   address: string | null; diet: string | null;
   presence: "PRESENT" | "ABSENT" | "PENDING"; notes: string | null;
-  group: string | null;
+  presenceMoments: string[];
 };
 
 type ParsedRow = {
   firstName: string; lastName: string;
-  address?: string; diet?: string; group?: string;
+  address?: string; diet?: string; presenceMoments?: string[];
   isDuplicate: boolean; include: boolean;
 };
 
 const PRESENCE_LABEL: Record<string, string> = { PRESENT: "Présent·e", ABSENT: "Absent·e", PENDING: "En attente" };
 const PRESENCE_CLASS: Record<string, string> = { PRESENT: "present", ABSENT: "absent",   PENDING: "pending" };
 const DIET_OPTIONS = ["Aucun (standard)", "Végétarien", "Végétalien / Vegan", "Sans gluten", "Sans lactose", "Halal", "Casher", "Allergie (préciser en commentaire)", "Enfant (menu enfant)"];
-const GROUP_OPTIONS = ["Côté marié", "Côté mariée", "Ami commun", "Famille"];
+
+const PRESENCE_MOMENTS = [
+  { key: "CEREMONIE",   label: "Cérémonie" },
+  { key: "VIN_HONNEUR", label: "Vin d'honneur" },
+  { key: "REPAS",       label: "Repas" },
+  { key: "SOIREE",      label: "Soirée" },
+  { key: "BRUNCH",      label: "Brunch" },
+];
+const ALL_MOMENT_KEYS = PRESENCE_MOMENTS.map((m) => m.key);
+const MOMENT_LABEL: Record<string, string> = Object.fromEntries(PRESENCE_MOMENTS.map((m) => [m.key, m.label]));
+
+const QUICK_PRESENCE_OPTIONS = [
+  { key: "ALL_DAY",     label: "Toute la journée", moments: ALL_MOMENT_KEYS },
+  { key: "CEREMONIE",   label: "Cérémonie",        moments: ["CEREMONIE"] },
+  { key: "VIN_HONNEUR", label: "Vin d'honneur",    moments: ["VIN_HONNEUR"] },
+  { key: "BRUNCH",      label: "Brunch",           moments: ["BRUNCH"] },
+];
+
+function momentsSummary(moments: string[]): string {
+  if (moments.length === 0) return "";
+  if (moments.length === ALL_MOMENT_KEYS.length) return "Toute la journée";
+  return moments.map((k) => MOMENT_LABEL[k] ?? k).join(", ");
+}
+
+function parseMomentsCell(raw: string): string[] {
+  const norm = (s: string) => s.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const tokens = raw.split(/[,;]/).map(norm).filter(Boolean);
+  const found = new Set<string>();
+  for (const t of tokens) {
+    if (t.includes("toute") && t.includes("journee")) { ALL_MOMENT_KEYS.forEach((k) => found.add(k)); continue; }
+    const match = PRESENCE_MOMENTS.find((m) => norm(m.label) === t || norm(m.label).includes(t) || t.includes(norm(m.label)));
+    if (match) found.add(match.key);
+  }
+  return Array.from(found);
+}
 
 function normKey(firstName: string, lastName: string) {
   return (firstName + " " + lastName).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -89,9 +123,9 @@ function parseCSVGuests(text: string, existing: Guest[]): { rows: ParsedRow[]; e
   if (idxFirst === -1 || idxLast === -1) {
     return { rows: [], error: "Colonnes «Prénom» et «Nom» introuvables dans le fichier." };
   }
-  const idxAddr  = findCol("adresse", "address");
-  const idxDiet  = findCol("regime", "régime", "diet", "regime alimentaire", "régime alimentaire");
-  const idxGroup = findCol("groupe", "group", "cote", "côté");
+  const idxAddr    = findCol("adresse", "address");
+  const idxDiet    = findCol("regime", "régime", "diet", "regime alimentaire", "régime alimentaire");
+  const idxMoments = findCol("presence", "présence", "moments", "creneaux", "créneaux");
 
   const seen = new Set(existing.map((g) => normKey(g.firstName, g.lastName)));
   const seenInBatch = new Set<string>();
@@ -99,13 +133,13 @@ function parseCSVGuests(text: string, existing: Guest[]): { rows: ParsedRow[]; e
   const parsed = dataRows.map((cols): ParsedRow => {
     const firstName = (cols[idxFirst] ?? "").trim();
     const lastName  = (cols[idxLast]  ?? "").trim();
-    const address   = idxAddr  >= 0 ? (cols[idxAddr]  ?? "").trim() || undefined : undefined;
-    const diet      = idxDiet  >= 0 ? (cols[idxDiet]  ?? "").trim() || undefined : undefined;
-    const group     = idxGroup >= 0 ? (cols[idxGroup] ?? "").trim() || undefined : undefined;
+    const address   = idxAddr    >= 0 ? (cols[idxAddr]    ?? "").trim() || undefined : undefined;
+    const diet      = idxDiet    >= 0 ? (cols[idxDiet]    ?? "").trim() || undefined : undefined;
+    const presenceMoments = idxMoments >= 0 ? parseMomentsCell(cols[idxMoments] ?? "") : undefined;
     const key = normKey(firstName, lastName);
     const isDuplicate = seen.has(key) || seenInBatch.has(key);
     seenInBatch.add(key);
-    return { firstName, lastName, address, diet, group, isDuplicate, include: true };
+    return { firstName, lastName, address, diet, presenceMoments, isDuplicate, include: true };
   }).filter((r) => r.firstName || r.lastName);
 
   return { rows: parsed };
@@ -116,7 +150,7 @@ export default function InvitesPage() {
   const [filter,  setFilter]  = useState("ALL");
   const [loading, setLoading] = useState(true);
 
-  const [form, setForm] = useState({ firstName: "", lastName: "", group: "" });
+  const [form, setForm] = useState({ firstName: "", lastName: "", quickPresence: "" });
   const [saving, setSaving] = useState(false);
   const [error,  setError]  = useState("");
   const firstNameRef = useRef<HTMLInputElement>(null);
@@ -137,16 +171,17 @@ export default function InvitesPage() {
     setError("");
     if (!form.firstName.trim() || !form.lastName.trim()) { setError("Prénom et nom obligatoires."); return; }
     setSaving(true);
+    const presenceMoments = QUICK_PRESENCE_OPTIONS.find((o) => o.key === form.quickPresence)?.moments ?? [];
     const res = await fetch("/api/couple/guests", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         firstName: form.firstName, lastName: form.lastName,
-        group: form.group || null,
+        presenceMoments,
       }),
     });
     setSaving(false);
     if (res.ok) {
-      setForm({ firstName: "", lastName: "", group: form.group });
+      setForm({ firstName: "", lastName: "", quickPresence: form.quickPresence });
       firstNameRef.current?.focus();
       load();
     } else {
@@ -218,7 +253,7 @@ export default function InvitesPage() {
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:12 }}>
           <div>
             <h3>Ajout <em>rapide</em></h3>
-            <p className="guest-add-form-sub">Prénom, nom, groupe — le reste se complète plus tard.</p>
+            <p className="guest-add-form-sub">Prénom, nom, présence — le reste se complète plus tard.</p>
           </div>
           <button type="button" className="btn ghost small" onClick={() => setShowImport(true)}>
             Importer plusieurs invités
@@ -237,10 +272,10 @@ export default function InvitesPage() {
                 onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} />
             </div>
             <div>
-              <label className="field-label">Groupe</label>
-              <select className="input" value={form.group} onChange={(e) => setForm((f) => ({ ...f, group: e.target.value }))}>
+              <label className="field-label">Présence</label>
+              <select className="input" value={form.quickPresence} onChange={(e) => setForm((f) => ({ ...f, quickPresence: e.target.value }))}>
                 <option value="">—</option>
-                {GROUP_OPTIONS.map((g) => <option key={g}>{g}</option>)}
+                {QUICK_PRESENCE_OPTIONS.map((o) => <option key={o.key} value={o.key}>{o.label}</option>)}
               </select>
             </div>
             <button className="btn gold" type="submit" disabled={saving}>{saving ? "Ajout…" : "Ajouter à la liste"}</button>
@@ -278,7 +313,7 @@ export default function InvitesPage() {
               <div>
                 <div className="guest-name">
                   {g.firstName} {g.lastName}
-                  {g.group && <span className="group-tag">{g.group}</span>}
+                  {g.presenceMoments.length > 0 && <span className="moment-tag">{momentsSummary(g.presenceMoments)}</span>}
                 </div>
                 {g.notes && <div className="guest-address">{g.notes}</div>}
               </div>
@@ -330,10 +365,24 @@ function GuestEditModal({ guest, onClose, onSaved }: {
   const [form, setForm] = useState({
     firstName: guest.firstName, lastName: guest.lastName,
     address: guest.address ?? "", diet: guest.diet ?? "Aucun (standard)",
-    presence: guest.presence, notes: guest.notes ?? "", group: guest.group ?? "",
+    presence: guest.presence, notes: guest.notes ?? "",
+    presenceMoments: guest.presenceMoments ?? [],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  const toggleMoment = (key: string) => setForm((f) => ({
+    ...f,
+    presenceMoments: f.presenceMoments.includes(key)
+      ? f.presenceMoments.filter((k) => k !== key)
+      : [...f.presenceMoments, key],
+  }));
+
+  const allDayChecked = form.presenceMoments.length === ALL_MOMENT_KEYS.length;
+  const toggleAllDay = () => setForm((f) => ({
+    ...f,
+    presenceMoments: allDayChecked ? [] : ALL_MOMENT_KEYS,
+  }));
 
   const handleSave = async () => {
     setError("");
@@ -346,7 +395,7 @@ function GuestEditModal({ guest, onClose, onSaved }: {
         address: form.address.trim() || null,
         diet: form.diet === "Aucun (standard)" ? null : form.diet,
         presence: form.presence, notes: form.notes.trim() || null,
-        group: form.group || null,
+        presenceMoments: form.presenceMoments,
       }),
     });
     setSaving(false);
@@ -362,12 +411,20 @@ function GuestEditModal({ guest, onClose, onSaved }: {
           <div><label className="field-label">Prénom</label><input className="input" value={form.firstName} onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))} /></div>
           <div><label className="field-label">Nom</label><input className="input" value={form.lastName} onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))} /></div>
         </div>
-        <div style={{ marginBottom: 14 }}>
-          <label className="field-label">Groupe</label>
-          <select className="input" value={form.group} onChange={(e) => setForm((f) => ({ ...f, group: e.target.value }))}>
-            <option value="">—</option>
-            {GROUP_OPTIONS.map((g) => <option key={g}>{g}</option>)}
-          </select>
+        <div style={{ marginBottom: 18 }}>
+          <label className="field-label">Présence (moments)</label>
+          <div className="moment-checkboxes">
+            <label className="moment-checkbox all-day">
+              <input type="checkbox" checked={allDayChecked} onChange={toggleAllDay} />
+              Toute la journée
+            </label>
+            {PRESENCE_MOMENTS.map((m) => (
+              <label key={m.key} className="moment-checkbox">
+                <input type="checkbox" checked={form.presenceMoments.includes(m.key)} onChange={() => toggleMoment(m.key)} />
+                {m.label}
+              </label>
+            ))}
+          </div>
         </div>
         <div style={{ marginBottom: 14 }}>
           <label className="field-label">Adresse postale</label>
@@ -489,7 +546,7 @@ function GuestImportModal({ existing, onClose, onImported }: {
             ) : (
               <>
                 <p className="guest-add-form-sub" style={{ marginBottom: 10 }}>
-                  Colonnes reconnues : Prénom, Nom (obligatoires), Adresse, Régime, Groupe (optionnelles). Exportez votre fichier Excel en CSV avant import.
+                  Colonnes reconnues : Prénom, Nom (obligatoires), Adresse, Régime, Présence (optionnelles — «Toute la journée», «Cérémonie», «Vin d'honneur», «Repas», «Soirée», «Brunch», séparés par une virgule). Exportez votre fichier Excel en CSV avant import.
                 </p>
                 <input
                   type="file" accept=".csv,text/csv"
@@ -511,7 +568,7 @@ function GuestImportModal({ existing, onClose, onImported }: {
                     <label key={i} className={`import-preview-row${r.isDuplicate ? " duplicate" : ""}`}>
                       <input type="checkbox" checked={r.include} onChange={() => toggleRow(i)} />
                       <span>{r.firstName} {r.lastName}</span>
-                      {r.group && <span className="group-tag">{r.group}</span>}
+                      {r.presenceMoments && r.presenceMoments.length > 0 && <span className="moment-tag">{momentsSummary(r.presenceMoments)}</span>}
                       {r.isDuplicate && <span className="duplicate-flag">Doublon ?</span>}
                     </label>
                   ))}
