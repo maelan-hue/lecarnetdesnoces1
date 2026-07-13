@@ -172,7 +172,7 @@ export default function CarnetClient({ data }: { data: CarnetData }) {
       <div className="prestataires-cta">
         <p className="prestataires-cta-kicker">Le premier pas de votre <em>aventure</em></p>
         <p className="prestataires-cta-desc">Parcourez des prestataires triés sur le volet du Roussillon et composez votre sélection.</p>
-        <Link href="/prestataires" className="btn gold-outline large prestataires-cta-btn">
+        <Link href="/prestataires" className="btn gold-outline prestataires-cta-btn">
           Découvrir les prestataires
           {selectionCount > 0 && (
             <span className="prestataires-cta-badge">{selectionCount} en sélection</span>
