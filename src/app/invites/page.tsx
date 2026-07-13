@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import Link from "next/link";
 
 type Guest = {
   id: string; firstName: string; lastName: string;
@@ -213,12 +212,6 @@ export default function InvitesPage() {
 
   return (
     <div className="container">
-
-      <div className="breadcrumb">
-        <Link href="/carnet">Votre carnet</Link>
-        <span className="sep">·</span>
-        <span>Invités</span>
-      </div>
 
       <div className="page-head">
         <div className="eyebrow">Votre table</div>

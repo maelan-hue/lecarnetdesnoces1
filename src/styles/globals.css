@@ -608,9 +608,9 @@ body {
 .cd-l { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--taupe); margin-top: 8px; }
 
 .parcours-summary { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.parcours-progress-track { flex: 1; height: 3px; background: var(--ivory); border: 1px solid var(--bone); border-radius: 2px; overflow: hidden; max-width: 420px; }
-.parcours-progress-fill  { height: 100%; background: var(--gold); transition: width 0.4s ease; }
-.parcours-progress-pct   { font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.08em; color: var(--gold); font-weight: 500; flex-shrink: 0; }
+.parcours-progress-track { flex: 1; height: 8px; background: var(--linen); border: 1px solid var(--bone); border-radius: 5px; overflow: hidden; max-width: 420px; }
+.parcours-progress-fill  { height: 100%; background: linear-gradient(90deg, var(--gold), #d9b25f); border-radius: 5px; box-shadow: 0 0 6px rgba(199,161,90,0.5); transition: width 0.4s ease; }
+.parcours-progress-pct   { font-family: 'Jost', sans-serif; font-size: 0.82rem; letter-spacing: 0.06em; color: var(--gold); font-weight: 600; flex-shrink: 0; }
 .parcours-progress-start { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--gold); flex-shrink: 0; }
 
 .phases { display: flex; flex-direction: column; gap: 14px; }
