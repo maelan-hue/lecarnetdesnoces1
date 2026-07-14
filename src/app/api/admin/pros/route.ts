@@ -11,7 +11,7 @@ export async function GET() {
 
   const pros = await db.pro.findMany({
     orderBy: { createdAt: "desc" },
-    select: { id:true, name:true, email:true, category:true, department:true, status:true, createdAt:true },
+    select: { id:true, name:true, email:true, category:true, department:true, status:true, createdAt:true, profilePhoto:true },
   });
   return NextResponse.json(pros);
 }
