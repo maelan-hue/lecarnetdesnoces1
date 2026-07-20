@@ -8,6 +8,8 @@ import { ProCategory } from "@prisma/client";
 type BulkProInput = {
   name: string; city?: string; department?: string;
   phone?: string; email?: string; tagline?: string; bio?: string; priceFrom?: number;
+  siteWeb?: string;
+  capacity?: string; accommodation?: string; traiteurs?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -50,6 +52,14 @@ export async function POST(req: NextRequest) {
 
     const hashed = await bcrypt.hash(generatePassword(), 12);
 
+    const site = p.siteWeb?.trim();
+    const siteUrl = site ? (/^https?:\/\//i.test(site) ? site : `https://${site}`) : null;
+
+    const specs: Record<string, string> = {};
+    if (p.capacity?.trim())      specs.capacity      = p.capacity.trim();
+    if (p.accommodation?.trim()) specs.accommodation = p.accommodation.trim();
+    if (p.traiteurs?.trim())     specs.traiteurs      = p.traiteurs.trim();
+
     const pro = await db.pro.create({
       data: {
         email, password: hashed,
@@ -61,6 +71,9 @@ export async function POST(req: NextRequest) {
         department: p.department?.trim() || null,
         tagline:    p.tagline?.trim() || null,
         bio:        p.bio?.trim() || null,
+        ctaUrl:     siteUrl,
+        ctaLabel:   siteUrl ? "Site web" : null,
+        specs:      Object.keys(specs).length > 0 ? specs : undefined,
         status:     "ACTIVE",
         validatedAt: new Date(),
         ambiances: [], styleKeywords: [], portfolioPhotos: [],

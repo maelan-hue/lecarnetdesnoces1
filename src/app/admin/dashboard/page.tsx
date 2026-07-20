@@ -21,6 +21,8 @@ const IMPORT_CATEGORIES = [
 type ParsedProRow = {
   name: string; city?: string; department?: string; phone?: string;
   email?: string; tagline?: string; bio?: string; priceFrom?: number;
+  siteWeb?: string;
+  capacity?: string; accommodation?: string; traiteurs?: string;
   isDuplicate: boolean; include: boolean;
 };
 
@@ -60,43 +62,79 @@ function parseCSVText(text: string): string[][] {
   return rows;
 }
 
-function parseCSVPros(text: string, existing: Pro[]): { rows: ParsedProRow[]; error?: string } {
+function parseCSVPros(text: string, existing: Pro[], category: string): { rows: ParsedProRow[]; error?: string } {
   const rows = parseCSVText(text);
   if (rows.length < 2) return { rows: [], error: "Fichier vide ou sans ligne de données." };
 
   const header = rows[0].map(normKey);
   const dataRows = rows.slice(1);
-  const findCol = (...names: string[]) => header.findIndex((h) => names.includes(h));
+  // Correspondance souple : la colonne matche si son en-tête CONTIENT un des mots-clés
+  // (permet "Ville / Secteur" → ville, "Tarif indicatif (EUR)" → tarif, "Description courte" → description)
+  const findCol = (...keywords: string[]) => header.findIndex((h) => keywords.some((k) => h.includes(k)));
 
   const idxName  = findCol("nom", "name");
   if (idxName === -1) return { rows: [], error: "Colonne «Nom» introuvable dans le fichier." };
-  const idxCity  = findCol("ville", "city");
-  const idxDept  = findCol("departement", "département", "department");
-  const idxPhone = findCol("telephone", "téléphone", "tel", "phone");
+  const idxCity  = findCol("ville", "secteur", "city");
+  const idxDept  = findCol("departement", "department");
+  const idxPhone = findCol("telephone", "phone");
   const idxEmail = findCol("email", "mail");
-  const idxTag   = findCol("accroche", "tagline");
+  const idxTag   = findCol("accroche", "tagline", "style");
   const idxBio   = findCol("description", "bio");
-  const idxPrice = findCol("prix", "prix a partir de", "prix à partir de", "tarif", "pricefrom");
+  const idxPrice = findCol("tarif", "prix", "pricefrom");
+  const idxSite  = findCol("site web", "siteweb", "website");
+  const idxMenus = findCol("menu"); // menus spéciaux — pas de champ dédié, repris dans la description
+  const idxNotes = findCol("notes", "note");
+
+  // Champs spécifiques "Lieu de réception" (voir SPEC_FIELDS.LIEU dans lib/specs.ts)
+  const idxCapMin = category === "LIEU" ? findCol("capacite min", "capacite mini") : -1;
+  const idxCapMax = category === "LIEU" ? findCol("capacite max", "capacite maxi") : -1;
+  const idxCapSingle = category === "LIEU" && idxCapMin === -1 && idxCapMax === -1 ? findCol("capacite") : -1;
+  const idxAccom  = category === "LIEU" ? findCol("hebergement", "accommodation") : -1;
+  const idxTraiteur = category === "LIEU" ? findCol("traiteur") : -1;
 
   const seenNames = new Set(existing.map((p) => normKey(p.name)));
   const seenEmails = new Set(existing.map((p) => p.email.toLowerCase()));
   const seenInBatch = new Set<string>();
 
+  const get = (cols: string[], idx: number) => idx >= 0 ? (cols[idx] ?? "").trim() : "";
+
   const parsed = dataRows.map((cols): ParsedProRow => {
-    const name  = (cols[idxName] ?? "").trim();
-    const email = idxEmail >= 0 ? (cols[idxEmail] ?? "").trim() || undefined : undefined;
+    const name  = get(cols, idxName);
+    const email = get(cols, idxEmail) || undefined;
     const key = normKey(name);
     const isDuplicate = seenNames.has(key) || seenInBatch.has(key) || (!!email && seenEmails.has(email.toLowerCase()));
     seenInBatch.add(key);
-    const priceRaw = idxPrice >= 0 ? (cols[idxPrice] ?? "").replace(/[^\d.,]/g, "").replace(",", ".") : "";
+    const priceRaw = get(cols, idxPrice).replace(/[^\d.,]/g, "").replace(",", ".");
+
+    const capMin = get(cols, idxCapMin);
+    const capMax = get(cols, idxCapMax);
+    const capacity = capMin || capMax
+      ? [capMin, capMax].filter(Boolean).join(" – ") + " personnes"
+      : get(cols, idxCapSingle) || undefined;
+
+    // Menus spéciaux / notes libres : pas de champ dédié en base, repris dans la description
+    // pour ne perdre aucune information saisie dans le fichier
+    const menus = get(cols, idxMenus);
+    const notes = get(cols, idxNotes);
+    const bioBase = get(cols, idxBio);
+    const bio = [
+      bioBase,
+      menus ? `Menus spéciaux : ${menus}` : "",
+      notes ? `Notes : ${notes}` : "",
+    ].filter(Boolean).join("\n\n") || undefined;
+
     return {
       name, email,
-      city:       idxCity  >= 0 ? (cols[idxCity]  ?? "").trim() || undefined : undefined,
-      department: idxDept  >= 0 ? (cols[idxDept]  ?? "").trim() || undefined : undefined,
-      phone:      idxPhone >= 0 ? (cols[idxPhone] ?? "").trim() || undefined : undefined,
-      tagline:    idxTag   >= 0 ? (cols[idxTag]   ?? "").trim() || undefined : undefined,
-      bio:        idxBio   >= 0 ? (cols[idxBio]   ?? "").trim() || undefined : undefined,
+      city:       get(cols, idxCity)  || undefined,
+      department: get(cols, idxDept)  || undefined,
+      phone:      get(cols, idxPhone) || undefined,
+      tagline:    get(cols, idxTag)   || undefined,
+      bio,
       priceFrom:  priceRaw ? Number(priceRaw) : undefined,
+      siteWeb:    get(cols, idxSite)  || undefined,
+      capacity,
+      accommodation: get(cols, idxAccom)    || undefined,
+      traiteurs:     get(cols, idxTraiteur) || undefined,
       isDuplicate, include: true,
     };
   }).filter((r) => r.name);
@@ -438,7 +476,7 @@ function ImportProsModal({ existing, onClose, onImported }: {
   const handleFile = async (file: File) => {
     setParseError("");
     const text = await file.text();
-    const { rows: parsed, error } = parseCSVPros(text, existing);
+    const { rows: parsed, error } = parseCSVPros(text, existing, category);
     if (error) { setParseError(error); setRows([]); return; }
     if (parsed.length === 0) { setParseError("Aucun prestataire détecté dans le fichier."); return; }
     setRows(parsed);
@@ -489,9 +527,10 @@ function ImportProsModal({ existing, onClose, onImported }: {
             </div>
 
             <p className="guest-add-form-sub" style={{ marginBottom: 10 }}>
-              Colonnes reconnues : Nom (obligatoire), Ville, Département, Téléphone, Email, Accroche, Description,
-              Prix à partir de (optionnelles). Toutes les fiches sont créées actives, avec un mot de passe généré —
-              aucun email n&apos;est envoyé.
+              Colonnes reconnues (les noms approchants suffisent, ex. «Ville / Secteur», «Tarif indicatif») : Nom
+              (obligatoire), Ville, Département, Téléphone, Email, Accroche/Style, Description, Tarif, Site web,
+              Notes/Menus spéciaux — et pour la catégorie Lieu : Capacité (min/max), Hébergement, Traiteur.
+              Toutes les fiches sont créées actives, avec un mot de passe généré — aucun email n&apos;est envoyé.
             </p>
             <input
               type="file" accept=".csv,text/csv"
@@ -512,6 +551,7 @@ function ImportProsModal({ existing, onClose, onImported }: {
                       <input type="checkbox" checked={r.include} onChange={() => toggleRow(i)} />
                       <span>{r.name}</span>
                       {r.city && <span className="moment-tag">{r.city}</span>}
+                      {r.capacity && <span className="moment-tag">{r.capacity}</span>}
                       {r.priceFrom && <span className="moment-tag">dès {r.priceFrom.toLocaleString("fr-FR")} €</span>}
                       {r.isDuplicate && <span className="duplicate-flag">Doublon ?</span>}
                     </label>
